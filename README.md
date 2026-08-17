@@ -1,4 +1,4 @@
-# Infineon BGT60TR13C — 60 GHz FMCW Radar for Gait Monitoring
+# Infineon BGT60TR13C 60 GHz FMCW Radar for Gait Monitoring
 
 **Project:** EEE 500 Master's Project, California State University Sacramento  
 **Authors:** Yoginath Ganditi, Mani S. Chilakala  
