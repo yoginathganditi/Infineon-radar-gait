@@ -1,7 +1,7 @@
-# Infineon BGT60TR13C 60 GHz FMCW Radar for Gait Monitoring
+# Infineon BGT60TR13C — 60 GHz FMCW Radar for Gait Monitoring
 
 **Project:** EEE 500 Master's Project, California State University Sacramento  
-**Authors:** Yoginath Ganditi, Mani S. Chilakala  
+**Authors:** Yoginath Ganditi [![ORCID](https://img.shields.io/badge/ORCID-0009--0009--6622--6241-green?logo=orcid)](https://orcid.org/0009-0009-6622-6241) [![SciProfiles](https://img.shields.io/badge/SciProfiles-Yoginath%20Ganditi-blue?logo=mdpi)](https://sciprofiles.com/profile/yoginathganditi) | Mani S. Chilakala  
 **Advisor:** Prof. Zahra Najafi  
 **Funding:** NSF Grant No. 2243089
 
