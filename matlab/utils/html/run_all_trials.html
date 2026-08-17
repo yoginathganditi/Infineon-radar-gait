@@ -1,0 +1,961 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>run_all_trials</title><meta name="generator" content="MATLAB 9.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-04-15"><meta name="DC.source" content="run_all_trials.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> run_all_trials()
+<span class="comment">% RUN_ALL_TRIALS  Batch process all recordings &#8212; 8 participants total.</span>
+<span class="comment">%</span>
+<span class="comment">%   Original cohort : Mani (P1), Yogi (P2), Srinath (P3), Manohar (P4)</span>
+<span class="comment">%   New cohort      : Hari (P5), Raj (P6), Vijay (P7), Sudeep (P8)</span>
+<span class="comment">%</span>
+<span class="comment">% HOW TO USE</span>
+<span class="comment">%   Option A &#8212; Run ONE subject/pattern/sensor:</span>
+<span class="comment">%       Set SUBJECT, PATTERN, SENSOR in the CONTROL PANEL and run.</span>
+<span class="comment">%   Option B &#8212; Run ALL subjects for a given pattern/sensor:</span>
+<span class="comment">%       Set RUN_ALL_SUBJECTS = true, then set PATTERN + SENSOR.</span>
+<span class="comment">%   Option C &#8212; Run EVERYTHING:</span>
+<span class="comment">%       Set RUN_ALL_SUBJECTS = true, PATTERN = 'all', SENSOR = 'both'.</span>
+
+    addpath(genpath(<span class="string">'C:\radar_gait_matlab'</span>));
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% EMPTY ROOM PATH  (shared across ALL fixed-radar trials)</span>
+    <span class="comment">% =====================================================================</span>
+    EMPTY_ROOM_PATH = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Empty_Hall_Riverside\RadarIfxAvian_00'</span>;
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% CONTROL PANEL  &#8212;  the only section you need to edit day-to-day</span>
+    <span class="comment">% =====================================================================</span>
+    SUBJECT  = <span class="string">'Manohar'</span>;
+    PATTERN  = <span class="string">'slow'</span>;       <span class="comment">% regular / slow / fast / festination / fog / all</span>
+    SENSOR   = <span class="string">'fixed'</span>;     <span class="comment">% fixed / shoe / both</span>
+
+    RUN_ALL_SUBJECTS       = false;
+    USE_SEGMENTS           = true;
+    SEGMENTS_MODE          = <span class="string">'hysteresis'</span>;
+    STEP_MODE              = <span class="string">'hybrid'</span>;
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% PER-PATTERN STEP HEIGHT THRESHOLDS</span>
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">%</span>
+    <span class="comment">%  FIXED RADAR  &#8212; torso bulk-motion leakage requires higher floor for</span>
+    <span class="comment">%                  normal walking, but must drop for pathologic patterns</span>
+    <span class="comment">%                  where swing amplitude is genuinely lower.</span>
+    <span class="comment">%</span>
+    <span class="comment">%   regular   : 1.80 m/s  &#8212; strong swing peaks, reject torso leakage</span>
+    <span class="comment">%   slow      : 1.20 m/s  &#8212; reduced swing &#8594; lower peaks (~1.0&#8211;2.0 m/s)</span>
+    <span class="comment">%   fast      : 1.80 m/s  &#8212; same as regular</span>
+    <span class="comment">%   festination: 0.80 m/s &#8212; rapid short steps, amplitude naturally lower</span>
+    <span class="comment">%   fog       : 0.35 m/s  &#8212; shuffle steps produce peaks as low as 0.3 m/s</span>
+    <span class="comment">%</span>
+    <span class="comment">%  SHOE RADAR  &#8212; near-field relative motion, no torso leakage,</span>
+    <span class="comment">%               thresholds stay low across all patterns.</span>
+    <span class="comment">%</span>
+    <span class="comment">%   regular   : 0.20 m/s</span>
+    <span class="comment">%   slow      : 0.15 m/s</span>
+    <span class="comment">%   fast      : 0.20 m/s</span>
+    <span class="comment">%   festination: 0.12 m/s</span>
+    <span class="comment">%   fog       : 0.10 m/s  &#8212; very small shuffle peaks</span>
+    <span class="comment">%</span>
+    FIXED_THR = struct( <span class="keyword">...</span>
+        <span class="string">'regular'</span>,     1.80, <span class="keyword">...</span>
+        <span class="string">'slow'</span>,        0.80, <span class="keyword">...</span>
+        <span class="string">'fast'</span>,        1.80, <span class="keyword">...</span>
+        <span class="string">'festination'</span>, 0.45, <span class="keyword">...</span>
+        <span class="string">'fog'</span>,         0.35);
+
+    SHOE_THR = struct( <span class="keyword">...</span>
+        <span class="string">'regular'</span>,     0.20, <span class="keyword">...</span>
+        <span class="string">'slow'</span>,        0.15, <span class="keyword">...</span>
+        <span class="string">'fast'</span>,        0.20, <span class="keyword">...</span>
+        <span class="string">'festination'</span>, 0.12, <span class="keyword">...</span>
+        <span class="string">'fog'</span>,         0.10);
+
+    DYNAMIC_GATE_HALFWIDTH_M = 0.8;
+    SAVE_SEPARATE_PLOTS      = true;
+    SHOW_PLOTS               = false;
+    RUN_ALL_TRIALS_IF_LIST   = true;
+    TRIAL_INDEX_IF_LIST      = 0;
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% AUTO-ZOOM SETTINGS  (per-pattern overrides below)</span>
+    <span class="comment">% =====================================================================</span>
+    ZOOM_WINDOW_S       = 2.0;
+    ZOOM_MIN_STEPS      = 3;
+    ZOOM_MAX_STEPS      = 6;
+    ZOOM_REGULARITY_THR = 0.35;
+    ZOOM_TIME_RANGE     = [];
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% MASTER LISTS</span>
+    <span class="comment">% =====================================================================</span>
+    ALL_SUBJECTS = {<span class="string">'Mani'</span>,<span class="string">'Yogi'</span>,<span class="string">'Srinath'</span>,<span class="string">'Manohar'</span>,<span class="string">'Hari'</span>,<span class="string">'Raj'</span>,<span class="string">'Vijay'</span>,<span class="string">'Sudeep'</span>};
+    ALL_PATTERNS = {<span class="string">'regular'</span>,<span class="string">'slow'</span>,<span class="string">'fast'</span>,<span class="string">'festination'</span>,<span class="string">'fog'</span>};
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% DATASET PATHS &#8212; FIXED RADAR</span>
+    <span class="comment">% =====================================================================</span>
+    FIXED_DATA = struct();
+
+    <span class="comment">% ---- P1: Mani -------------------------------------------------------</span>
+    FIXED_DATA.Mani.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\two_persons20260219-144928\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Mani.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Slow'</span>;
+    FIXED_DATA.Mani.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\fast_prof20260212-162613\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Mani.festination = {<span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Festination\trial 1'</span>, <span class="keyword">...</span>
+                                   <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Festination\trial 2'</span>, <span class="keyword">...</span>
+                                   <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Festination\trial 3'</span>};
+    FIXED_DATA.Mani.fog         = {<span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Fog\trial 1'</span>, <span class="keyword">...</span>
+                                   <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Fog\trial 2'</span>, <span class="keyword">...</span>
+                                   <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Fog\trial 3'</span>};
+
+    <span class="comment">% ---- P2: Yogi -------------------------------------------------------</span>
+    FIXED_DATA.Yogi.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Regular'</span>;
+    FIXED_DATA.Yogi.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Slow'</span>;
+    FIXED_DATA.Yogi.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Fast'</span>;
+    FIXED_DATA.Yogi.festination = {<span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Festination\trial 1'</span>, <span class="keyword">...</span>
+                                   <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Festination\trial 2'</span>, <span class="keyword">...</span>
+                                   <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Festination\trial 3'</span>};
+    FIXED_DATA.Yogi.fog         = {<span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Fog\trial 1'</span>, <span class="keyword">...</span>
+                                   <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Fog\trial 2'</span>, <span class="keyword">...</span>
+                                   <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Fog\trial 3'</span>};
+
+    <span class="comment">% ---- P3: Srinath ----------------------------------------------------</span>
+    FIXED_DATA.Srinath.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Srinath P3\Regular'</span>;
+    FIXED_DATA.Srinath.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Srinath P3\Slow'</span>;
+    FIXED_DATA.Srinath.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Srinath P3\Fast'</span>;
+    FIXED_DATA.Srinath.festination = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Srinath P3\Festination'</span>;
+    FIXED_DATA.Srinath.fog         = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Srinath P3\Fog'</span>;
+
+    <span class="comment">% ---- P4: Manohar ----------------------------------------------------</span>
+    FIXED_DATA.Manohar.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Regular'</span>;
+    FIXED_DATA.Manohar.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Slow'</span>;
+    FIXED_DATA.Manohar.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Fast'</span>;
+    FIXED_DATA.Manohar.festination = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Festination'</span>;
+    FIXED_DATA.Manohar.fog         = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Fog'</span>;
+
+    <span class="comment">% ---- P5: Hari -------------------------------------------------------</span>
+    FIXED_DATA.Hari.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Fixed\hari_regular20260301-131608\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Hari.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Fixed\hari_slow20260301-131727\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Hari.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Fixed\hari_fast20260301-131832\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Hari.festination = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Fixed\hari_festination20260301-132013\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Hari.fog         = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Fixed\hari_fog20260301-132138\RadarIfxAvian_00'</span>;
+
+    <span class="comment">% ---- P6: Raj --------------------------------------------------------</span>
+    FIXED_DATA.Raj.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Fixed\raj_regular20260301-122426\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Raj.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Fixed\raj_slow20260301-122605\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Raj.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Fixed\raj_fast20260301-122717\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Raj.festination = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Fixed\raj_festination20260301-122841\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Raj.fog         = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Fixed\raj_fog20260301-123008\RadarIfxAvian_00'</span>;
+
+    <span class="comment">% ---- P7: Vijay ------------------------------------------------------</span>
+    FIXED_DATA.Vijay.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Fixed\vijay_regular20260301-121317\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Vijay.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Fixed\vijay_slow20260301-121435\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Vijay.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Fixed\vijay_fast20260301-121540\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Vijay.festination = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Fixed\vijay_festination20260301-121915\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Vijay.fog         = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Fixed\vijay_fog20260301-122102\RadarIfxAvian_00'</span>;
+
+    <span class="comment">% ---- P8: Sudeep -----------------------------------------------------</span>
+    FIXED_DATA.Sudeep.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Fixed\sudeep_regular20260301-130319\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Sudeep.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Fixed\sudeep_slow20260301-130516\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Sudeep.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Fixed\sudeep_fast20260301-130636\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Sudeep.festination = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Fixed\sudeep_festination20260301-130958\RadarIfxAvian_00'</span>;
+    FIXED_DATA.Sudeep.fog         = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Fixed\sudeep_fog20260301-131304\RadarIfxAvian_00'</span>;
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% DATASET PATHS &#8212; SHOE-MOUNTED</span>
+    <span class="comment">% =====================================================================</span>
+    SHOE_DATA = struct();
+
+    <span class="comment">% ---- P1: Mani -------------------------------------------------------</span>
+    SHOE_DATA.Mani.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\mani_regularshoe20260218-115859\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Mani.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\mani_slowshoe20260218-120026\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Mani.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\mani_fastshoe120260218-120252\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Mani.festination = {<span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Mani P1\Festination\trial 1'</span>};
+    SHOE_DATA.Mani.fog         = {<span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Mani P1\Fog\trial 1'</span>};
+
+    <span class="comment">% ---- P2: Yogi -------------------------------------------------------</span>
+    SHOE_DATA.Yogi.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Yogi P2\Regular'</span>;
+    SHOE_DATA.Yogi.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Yogi P2\Slow'</span>;
+    SHOE_DATA.Yogi.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Yogi P2\Fast'</span>;
+    SHOE_DATA.Yogi.festination = {<span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Yogi P2\Festination\trial 1'</span>};
+    SHOE_DATA.Yogi.fog         = {<span class="string">'C:\Users\GANDITI YOGINATH\Documents\RadarFusionGUI\BGT60TR13C\yogi_shoe__hor_fog_trail220251230-022110\RadarIfxAvian_00'</span>};
+
+    <span class="comment">% ---- P3: Srinath ----------------------------------------------------</span>
+    SHOE_DATA.Srinath.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Srinath P3\Regular'</span>;
+    SHOE_DATA.Srinath.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Srinath P3\Slow'</span>;
+    SHOE_DATA.Srinath.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Srinath P3\Fast'</span>;
+    SHOE_DATA.Srinath.festination = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Srinath P3\Festination'</span>;
+    SHOE_DATA.Srinath.fog         = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Srinath P3\Fog'</span>;
+
+    <span class="comment">% ---- P4: Manohar ----------------------------------------------------</span>
+    SHOE_DATA.Manohar.regular     = <span class="string">'C:\Users\GANDITI YOGINATH\Documents\RadarFusionGUI\BGT60TR13C\manohar_shoe_final_regular20260101-013928\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Manohar.slow        = <span class="string">'C:\Users\GANDITI YOGINATH\Documents\RadarFusionGUI\BGT60TR13C\manohar_shoe_final_slow20260101-014107\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Manohar.fast        = <span class="string">'C:\Users\GANDITI YOGINATH\Documents\RadarFusionGUI\BGT60TR13C\manohar_shoe_final_fast20260101-014241\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Manohar.festination = <span class="string">'C:\Users\GANDITI YOGINATH\Documents\RadarFusionGUI\BGT60TR13C\manohar_shoe_final_festination20260101-014409\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Manohar.fog         = <span class="string">'C:\Users\GANDITI YOGINATH\Documents\RadarFusionGUI\BGT60TR13C\manohar_shoe_final_fog20260101-014536\RadarIfxAvian_00'</span>;
+
+    <span class="comment">% ---- P5: Hari -------------------------------------------------------</span>
+    SHOE_DATA.Hari.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Shoe\hari_shoe_regular20260301-132502\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Hari.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Shoe\hari_shoe_slow20260301-132624\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Hari.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Shoe\hari_shoe_fast20260301-132751\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Hari.festination = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Shoe\hari_shoe_festination20260301-133152\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Hari.fog         = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Shoe\hari_shoe_fog20260301-133355\RadarIfxAvian_00'</span>;
+
+    <span class="comment">% ---- P6: Raj --------------------------------------------------------</span>
+    SHOE_DATA.Raj.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Shoe\raj_shoe_regular20260301-124939\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Raj.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Shoe\raj_shoe_slow20260301-125108\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Raj.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Shoe\raj_shoe_fast20260301-125306\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Raj.festination = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Shoe\raj_shoe_festination20260301-125440\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Raj.fog         = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Shoe\raj_shoe_fog20260301-125623\RadarIfxAvian_00'</span>;
+
+    <span class="comment">% ---- P7: Vijay ------------------------------------------------------</span>
+    SHOE_DATA.Vijay.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Shoe\vijay_shoe_regular20260301-123648\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Vijay.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Shoe\vijay_shoe_slow20260301-123906\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Vijay.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Shoe\vijay_shoe_fast20260301-124040\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Vijay.festination = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Shoe\vijay_shoe_festination20260301-124307\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Vijay.fog         = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Shoe\vijay_shoe_fog20260301-124541\RadarIfxAvian_00'</span>;
+
+    <span class="comment">% ---- P8: Sudeep -----------------------------------------------------</span>
+    SHOE_DATA.Sudeep.regular     = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Shoe\sudeep_shoe_regular20260301-134107\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Sudeep.slow        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Shoe\sudeep_shoe_slow20260301-134233\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Sudeep.fast        = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Shoe\sudeep_shoe_fast20260301-134417\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Sudeep.festination = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Shoe\sudeep_shoe_festination20260301-134847\RadarIfxAvian_00'</span>;
+    SHOE_DATA.Sudeep.fog         = <span class="string">'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Shoe\sudeep_shoe_fog20260301-135324\RadarIfxAvian_00'</span>;
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% RESOLVE WHAT TO RUN</span>
+    <span class="comment">% =====================================================================</span>
+    <span class="keyword">if</span> RUN_ALL_SUBJECTS
+        subjects_to_run = ALL_SUBJECTS;
+    <span class="keyword">else</span>
+        subjects_to_run = {SUBJECT};
+    <span class="keyword">end</span>
+
+    <span class="keyword">if</span> strcmp(PATTERN, <span class="string">'all'</span>)
+        patterns_to_run = ALL_PATTERNS;
+    <span class="keyword">else</span>
+        patterns_to_run = {PATTERN};
+    <span class="keyword">end</span>
+
+    <span class="keyword">if</span> strcmp(SENSOR, <span class="string">'both'</span>)
+        sensors_to_run = {<span class="string">'fixed'</span>, <span class="string">'shoe'</span>};
+    <span class="keyword">else</span>
+        sensors_to_run = {SENSOR};
+    <span class="keyword">end</span>
+
+    total_planned = length(subjects_to_run) * length(patterns_to_run) * length(sensors_to_run);
+    fprintf(<span class="string">'\n============================================================\n'</span>);
+    fprintf(<span class="string">'BATCH START: %d subject(s) x %d pattern(s) x %d sensor(s) = %d run(s)\n'</span>, <span class="keyword">...</span>
+            length(subjects_to_run), length(patterns_to_run), length(sensors_to_run), total_planned);
+    fprintf(<span class="string">'Auto-zoom: window=%.1fs | steps=%d-%d | regularity_thr=%.2f\n'</span>, <span class="keyword">...</span>
+            ZOOM_WINDOW_S, ZOOM_MIN_STEPS, ZOOM_MAX_STEPS, ZOOM_REGULARITY_THR);
+    fprintf(<span class="string">'Per-pattern thresholds (fixed): regular=%.2f  slow=%.2f  fast=%.2f  festination=%.2f  fog=%.2f\n'</span>, <span class="keyword">...</span>
+            FIXED_THR.regular, FIXED_THR.slow, FIXED_THR.fast, FIXED_THR.festination, FIXED_THR.fog);
+    fprintf(<span class="string">'Per-pattern thresholds (shoe) : regular=%.2f  slow=%.2f  fast=%.2f  festination=%.2f  fog=%.2f\n'</span>, <span class="keyword">...</span>
+            SHOE_THR.regular, SHOE_THR.slow, SHOE_THR.fast, SHOE_THR.festination, SHOE_THR.fog);
+    fprintf(<span class="string">'============================================================\n'</span>);
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% MAIN LOOP</span>
+    <span class="comment">% =====================================================================</span>
+    total_ok   = 0;
+    failed_log = {};
+
+    <span class="keyword">for</span> si = 1:length(subjects_to_run)
+        subj = subjects_to_run{si};
+
+        <span class="keyword">for</span> pi = 1:length(patterns_to_run)
+            pat = patterns_to_run{pi};
+
+            <span class="comment">% ----------------------------------------------------------</span>
+            <span class="comment">% Per-pattern auto-zoom settings</span>
+            <span class="comment">% ----------------------------------------------------------</span>
+            <span class="keyword">switch</span> pat
+                <span class="keyword">case</span> {<span class="string">'festination'</span>, <span class="string">'fog'</span>}
+                    z_reg = 0.50;   <span class="comment">% more irregular cadence &#8212; be lenient</span>
+                    z_max = 10;     <span class="comment">% more steps may fit in 2s window</span>
+                    z_min = 3;
+                <span class="keyword">case</span> <span class="string">'slow'</span>
+                    z_reg = 0.40;
+                    z_max = 5;
+                    z_min = 2;
+                <span class="keyword">otherwise</span>            <span class="comment">% regular, fast</span>
+                    z_reg = ZOOM_REGULARITY_THR;
+                    z_max = ZOOM_MAX_STEPS;
+                    z_min = ZOOM_MIN_STEPS;
+            <span class="keyword">end</span>
+
+            <span class="keyword">for</span> sni = 1:length(sensors_to_run)
+                sen = sensors_to_run{sni};
+
+                fprintf(<span class="string">'\n--- %s | %s | %s ---\n'</span>, subj, pat, upper(sen));
+
+                <span class="keyword">try</span>
+                    <span class="keyword">if</span> strcmp(sen, <span class="string">'fixed'</span>)
+                        thr   = FIXED_THR.(pat);
+                        entry = FIXED_DATA.(subj).(pat);
+                        dispatch_entry(entry, <span class="string">'fixed'</span>, EMPTY_ROOM_PATH, <span class="keyword">...</span>
+                            USE_SEGMENTS, SEGMENTS_MODE, STEP_MODE, <span class="keyword">...</span>
+                            thr, DYNAMIC_GATE_HALFWIDTH_M, <span class="keyword">...</span>
+                            SAVE_SEPARATE_PLOTS, SHOW_PLOTS, <span class="keyword">...</span>
+                            ZOOM_WINDOW_S, z_min, z_max, z_reg, ZOOM_TIME_RANGE, <span class="keyword">...</span>
+                            RUN_ALL_TRIALS_IF_LIST, TRIAL_INDEX_IF_LIST, subj, pat);
+                    <span class="keyword">else</span>
+                        thr   = SHOE_THR.(pat);
+                        entry = SHOE_DATA.(subj).(pat);
+                        dispatch_entry(entry, <span class="string">'shoe'</span>, <span class="string">''</span>, <span class="keyword">...</span>
+                            USE_SEGMENTS, SEGMENTS_MODE, STEP_MODE, <span class="keyword">...</span>
+                            thr, 0, <span class="keyword">...</span>
+                            SAVE_SEPARATE_PLOTS, SHOW_PLOTS, <span class="keyword">...</span>
+                            ZOOM_WINDOW_S, z_min, z_max, z_reg, ZOOM_TIME_RANGE, <span class="keyword">...</span>
+                            RUN_ALL_TRIALS_IF_LIST, TRIAL_INDEX_IF_LIST, subj, pat);
+                    <span class="keyword">end</span>
+
+                    total_ok = total_ok + 1;
+                    fprintf(<span class="string">'  -&gt; OK  (thr=%.2f m/s)\n'</span>, thr);
+
+                <span class="keyword">catch</span> ME
+                    msg = sprintf(<span class="string">'%s|%s|%s: %s'</span>, subj, pat, sen, ME.message);
+                    fprintf(<span class="string">'  -&gt; FAILED: %s\n'</span>, ME.message);
+                    failed_log{end+1} = msg; <span class="comment">%#ok&lt;AGROW&gt;</span>
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% =====================================================================</span>
+    <span class="comment">% FINAL SUMMARY</span>
+    <span class="comment">% =====================================================================</span>
+    fprintf(<span class="string">'\n============================================================\n'</span>);
+    fprintf(<span class="string">'BATCH COMPLETE: %d/%d succeeded\n'</span>, total_ok, total_planned);
+    <span class="keyword">if</span> ~isempty(failed_log)
+        fprintf(<span class="string">'Failed runs (%d):\n'</span>, length(failed_log));
+        <span class="keyword">for</span> k = 1:length(failed_log)
+            fprintf(<span class="string">'  [%d] %s\n'</span>, k, failed_log{k});
+        <span class="keyword">end</span>
+    <span class="keyword">else</span>
+        fprintf(<span class="string">'All runs succeeded with no errors.\n'</span>);
+    <span class="keyword">end</span>
+    fprintf(<span class="string">'============================================================\n'</span>);
+<span class="keyword">end</span>
+
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">% INTERNAL: handle single-path OR cell-array entries</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> dispatch_entry(entry, sensor_type, empty_path, <span class="keyword">...</span>
+        use_segments, segments_mode, step_mode, <span class="keyword">...</span>
+        min_step_height, dyn_gate, save_plots, show_plots, <span class="keyword">...</span>
+        zoom_win, zoom_min, zoom_max, zoom_reg_thr, zoom_range, <span class="keyword">...</span>
+        run_all, trial_idx, subject, pattern)
+
+    paths = entry;
+    <span class="keyword">if</span> ~iscell(paths), paths = {paths}; <span class="keyword">end</span>
+    n = length(paths);
+
+    <span class="keyword">if</span> n &gt; 1 &amp;&amp; run_all
+        fprintf(<span class="string">'  %d trials for %s-%s (%s)\n'</span>, n, subject, pattern, upper(sensor_type));
+        <span class="keyword">for</span> i = 1:n
+            fprintf(<span class="string">'  Trial %d/%d...\n'</span>, i, n);
+            <span class="keyword">try</span>
+                call_pipeline(char(paths{i}), sensor_type, empty_path, <span class="keyword">...</span>
+                    use_segments, segments_mode, step_mode, min_step_height, <span class="keyword">...</span>
+                    dyn_gate, save_plots, show_plots, <span class="keyword">...</span>
+                    zoom_win, zoom_min, zoom_max, zoom_reg_thr, zoom_range);
+                fprintf(<span class="string">'  Trial %d: OK\n'</span>, i);
+            <span class="keyword">catch</span> ME
+                fprintf(<span class="string">'  Trial %d FAILED: %s\n'</span>, i, ME.message);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">else</span>
+        idx = min(max(trial_idx + 1, 1), n);
+        call_pipeline(char(paths{idx}), sensor_type, empty_path, <span class="keyword">...</span>
+            use_segments, segments_mode, step_mode, min_step_height, <span class="keyword">...</span>
+            dyn_gate, save_plots, show_plots, <span class="keyword">...</span>
+            zoom_win, zoom_min, zoom_max, zoom_reg_thr, zoom_range);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">% INTERNAL: call the appropriate pipeline function</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> call_pipeline(walk_path, sensor_type, empty_path, <span class="keyword">...</span>
+        use_segments, segments_mode, step_mode, min_step_height, <span class="keyword">...</span>
+        dyn_gate, save_plots, show_plots, <span class="keyword">...</span>
+        zoom_win, zoom_min, zoom_max, zoom_reg_thr, zoom_range)
+
+    <span class="keyword">if</span> strcmp(sensor_type, <span class="string">'fixed'</span>)
+        run_fixed(empty_path, walk_path, <span class="keyword">...</span>
+            <span class="string">'frame_dt'</span>,                 0.078, <span class="keyword">...</span>
+            <span class="string">'r_gate'</span>,                   [1.5, 7.0], <span class="keyword">...</span>
+            <span class="string">'show'</span>,                     show_plots, <span class="keyword">...</span>
+            <span class="string">'use_segments'</span>,             use_segments, <span class="keyword">...</span>
+            <span class="string">'segments_mode'</span>,            segments_mode, <span class="keyword">...</span>
+            <span class="string">'segment_pad_s'</span>,            0.30, <span class="keyword">...</span>
+            <span class="string">'dynamic_gate_halfwidth_m'</span>, dyn_gate, <span class="keyword">...</span>
+            <span class="string">'step_min_toe_mps'</span>,         min_step_height, <span class="keyword">...</span>
+            <span class="string">'step_mode'</span>,                step_mode, <span class="keyword">...</span>
+            <span class="string">'save_separate_plots'</span>,      save_plots, <span class="keyword">...</span>
+            <span class="string">'zoom_time_range'</span>,          zoom_range, <span class="keyword">...</span>
+            <span class="string">'zoom_window_s'</span>,            zoom_win, <span class="keyword">...</span>
+            <span class="string">'zoom_min_steps'</span>,           zoom_min, <span class="keyword">...</span>
+            <span class="string">'zoom_max_steps'</span>,           zoom_max, <span class="keyword">...</span>
+            <span class="string">'zoom_regularity_thr'</span>,      zoom_reg_thr);
+    <span class="keyword">else</span>
+        run_shoe_mounted(walk_path, <span class="keyword">...</span>
+            <span class="string">'r_gate'</span>,                   [0.10, 1.20], <span class="keyword">...</span>
+            <span class="string">'show'</span>,                     show_plots, <span class="keyword">...</span>
+            <span class="string">'use_segments'</span>,             use_segments, <span class="keyword">...</span>
+            <span class="string">'segments_mode'</span>,            segments_mode, <span class="keyword">...</span>
+            <span class="string">'segment_pad_s'</span>,            0.25, <span class="keyword">...</span>
+            <span class="string">'step_mode'</span>,                step_mode, <span class="keyword">...</span>
+            <span class="string">'min_step_height_mps'</span>,      min_step_height, <span class="keyword">...</span>
+            <span class="string">'height_prc'</span>,               10, <span class="keyword">...</span>
+            <span class="string">'save_separate_plots'</span>,      save_plots, <span class="keyword">...</span>
+            <span class="string">'zoom_time_range'</span>,          zoom_range, <span class="keyword">...</span>
+            <span class="string">'zoom_window_s'</span>,            zoom_win, <span class="keyword">...</span>
+            <span class="string">'zoom_min_steps'</span>,           zoom_min, <span class="keyword">...</span>
+            <span class="string">'zoom_max_steps'</span>,           zoom_max, <span class="keyword">...</span>
+            <span class="string">'zoom_regularity_thr'</span>,      zoom_reg_thr);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">
+============================================================
+BATCH START: 1 subject(s) x 1 pattern(s) x 1 sensor(s) = 1 run(s)
+Auto-zoom: window=2.0s | steps=3-6 | regularity_thr=0.35
+Per-pattern thresholds (fixed): regular=1.80  slow=0.80  fast=1.80  festination=0.45  fog=0.35
+Per-pattern thresholds (shoe) : regular=0.20  slow=0.15  fast=0.20  festination=0.12  fog=0.10
+============================================================
+
+--- Manohar | slow | FIXED ---
+
+=== FIXED RADAR GAIT ANALYSIS ===
+Empty folder: C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Empty_Hall_Riverside\RadarIfxAvian_00
+Walk  folder: C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Slow
+Frame dt: 0.0780 s  |  Range gate: [1.5, 7.0] m
+
+1. Loading WALK data...
+   Loading from radar.npy...
+   Walk adc (F,C,R,S): [384 128 3 280]
+2. Loading EMPTY data...
+   Loading from radar.npy...
+   Empty adc (F,C,R,S): [576 128 3 280]
+3. Background subtraction...
+4. Computing RD/RT/VT maps...
+5. Tracking torso...
+6. Computing VT map &amp; toe envelope...
+7. Finding walking segments...
+8. Detecting steps...
+9. Auto-selecting zoom window (2.0 s, 2-5 steps)...
+   Auto-zoom selected: [13.96, 15.91] s
+10. Computing statistics...
+11. Saving results...
+&#10003; CSV saved: C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Slow\Gait_Analysis_Results_FIXED.csv
+Saving RT plot...
+  Warning: Could not save PDF: Handle input argument contains nonhandle values.
+Saving VT plot...
+  Warning: Could not save PDF: Handle input argument contains nonhandle values.
+Saving toe envelope plot...
+&#10003; All plots saved to: C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Slow
+
+=== ANALYSIS COMPLETE ===
+Total steps used: 26
+Cadence: 62.50 spm
+Mean stride length: 0.675 m
+Auto-zoom window: [13.96, 15.91] s
+  -&gt; OK  (thr=0.80 m/s)
+
+============================================================
+BATCH COMPLETE: 1/1 succeeded
+All runs succeeded with no errors.
+============================================================
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2023a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function run_all_trials()
+% RUN_ALL_TRIALS  Batch process all recordings — 8 participants total.
+%
+%   Original cohort : Mani (P1), Yogi (P2), Srinath (P3), Manohar (P4)
+%   New cohort      : Hari (P5), Raj (P6), Vijay (P7), Sudeep (P8)
+%
+% HOW TO USE
+%   Option A — Run ONE subject/pattern/sensor:
+%       Set SUBJECT, PATTERN, SENSOR in the CONTROL PANEL and run.
+%   Option B — Run ALL subjects for a given pattern/sensor:
+%       Set RUN_ALL_SUBJECTS = true, then set PATTERN + SENSOR.
+%   Option C — Run EVERYTHING:
+%       Set RUN_ALL_SUBJECTS = true, PATTERN = 'all', SENSOR = 'both'.
+
+    addpath(genpath('C:\radar_gait_matlab'));
+
+    % =====================================================================
+    % EMPTY ROOM PATH  (shared across ALL fixed-radar trials)
+    % =====================================================================
+    EMPTY_ROOM_PATH = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Empty_Hall_Riverside\RadarIfxAvian_00';
+
+    % =====================================================================
+    % CONTROL PANEL  —  the only section you need to edit day-to-day
+    % =====================================================================
+    SUBJECT  = 'Manohar';
+    PATTERN  = 'slow';       % regular / slow / fast / festination / fog / all
+    SENSOR   = 'fixed';     % fixed / shoe / both
+
+    RUN_ALL_SUBJECTS       = false;
+    USE_SEGMENTS           = true;
+    SEGMENTS_MODE          = 'hysteresis';
+    STEP_MODE              = 'hybrid';
+
+    % =====================================================================
+    % PER-PATTERN STEP HEIGHT THRESHOLDS
+    % =====================================================================
+    %
+    %  FIXED RADAR  — torso bulk-motion leakage requires higher floor for
+    %                  normal walking, but must drop for pathologic patterns
+    %                  where swing amplitude is genuinely lower.
+    %
+    %   regular   : 1.80 m/s  — strong swing peaks, reject torso leakage
+    %   slow      : 1.20 m/s  — reduced swing → lower peaks (~1.0–2.0 m/s)
+    %   fast      : 1.80 m/s  — same as regular
+    %   festination: 0.80 m/s — rapid short steps, amplitude naturally lower
+    %   fog       : 0.35 m/s  — shuffle steps produce peaks as low as 0.3 m/s
+    %
+    %  SHOE RADAR  — near-field relative motion, no torso leakage,
+    %               thresholds stay low across all patterns.
+    %
+    %   regular   : 0.20 m/s
+    %   slow      : 0.15 m/s
+    %   fast      : 0.20 m/s
+    %   festination: 0.12 m/s
+    %   fog       : 0.10 m/s  — very small shuffle peaks
+    %
+    FIXED_THR = struct( ...
+        'regular',     1.80, ...
+        'slow',        0.80, ...
+        'fast',        1.80, ...
+        'festination', 0.45, ...
+        'fog',         0.35);
+
+    SHOE_THR = struct( ...
+        'regular',     0.20, ...
+        'slow',        0.15, ...
+        'fast',        0.20, ...
+        'festination', 0.12, ...
+        'fog',         0.10);
+
+    DYNAMIC_GATE_HALFWIDTH_M = 0.8;
+    SAVE_SEPARATE_PLOTS      = true;
+    SHOW_PLOTS               = false;
+    RUN_ALL_TRIALS_IF_LIST   = true;
+    TRIAL_INDEX_IF_LIST      = 0;
+
+    % =====================================================================
+    % AUTO-ZOOM SETTINGS  (per-pattern overrides below)
+    % =====================================================================
+    ZOOM_WINDOW_S       = 2.0;
+    ZOOM_MIN_STEPS      = 3;
+    ZOOM_MAX_STEPS      = 6;
+    ZOOM_REGULARITY_THR = 0.35;
+    ZOOM_TIME_RANGE     = [];
+
+    % =====================================================================
+    % MASTER LISTS
+    % =====================================================================
+    ALL_SUBJECTS = {'Mani','Yogi','Srinath','Manohar','Hari','Raj','Vijay','Sudeep'};
+    ALL_PATTERNS = {'regular','slow','fast','festination','fog'};
+
+    % =====================================================================
+    % DATASET PATHS — FIXED RADAR
+    % =====================================================================
+    FIXED_DATA = struct();
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P1: Mani REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+    FIXED_DATA.Mani.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\two_persons20260219-144928\RadarIfxAvian_00';
+    FIXED_DATA.Mani.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Slow';
+    FIXED_DATA.Mani.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\fast_prof20260212-162613\RadarIfxAvian_00';
+    FIXED_DATA.Mani.festination = {'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Festination\trial 1', ...
+                                   'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Festination\trial 2', ...
+                                   'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Festination\trial 3'};
+    FIXED_DATA.Mani.fog         = {'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Fog\trial 1', ...
+                                   'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Fog\trial 2', ...
+                                   'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Mani P1\Fog\trial 3'};
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P2: Yogi REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+    FIXED_DATA.Yogi.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Regular';
+    FIXED_DATA.Yogi.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Slow';
+    FIXED_DATA.Yogi.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Fast';
+    FIXED_DATA.Yogi.festination = {'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Festination\trial 1', ...
+                                   'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Festination\trial 2', ...
+                                   'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Festination\trial 3'};
+    FIXED_DATA.Yogi.fog         = {'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Fog\trial 1', ...
+                                   'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Fog\trial 2', ...
+                                   'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Yogi P2\Fog\trial 3'};
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P3: Srinath REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    FIXED_DATA.Srinath.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Srinath P3\Regular';
+    FIXED_DATA.Srinath.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Srinath P3\Slow';
+    FIXED_DATA.Srinath.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Srinath P3\Fast';
+    FIXED_DATA.Srinath.festination = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Srinath P3\Festination';
+    FIXED_DATA.Srinath.fog         = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Srinath P3\Fog';
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P4: Manohar REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    FIXED_DATA.Manohar.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Regular';
+    FIXED_DATA.Manohar.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Slow';
+    FIXED_DATA.Manohar.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Fast';
+    FIXED_DATA.Manohar.festination = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Festination';
+    FIXED_DATA.Manohar.fog         = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Manohar P4\Fog';
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P5: Hari REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+    FIXED_DATA.Hari.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Fixed\hari_regular20260301-131608\RadarIfxAvian_00';
+    FIXED_DATA.Hari.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Fixed\hari_slow20260301-131727\RadarIfxAvian_00';
+    FIXED_DATA.Hari.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Fixed\hari_fast20260301-131832\RadarIfxAvian_00';
+    FIXED_DATA.Hari.festination = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Fixed\hari_festination20260301-132013\RadarIfxAvian_00';
+    FIXED_DATA.Hari.fog         = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Fixed\hari_fog20260301-132138\RadarIfxAvian_00';
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P6: Raj REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    FIXED_DATA.Raj.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Fixed\raj_regular20260301-122426\RadarIfxAvian_00';
+    FIXED_DATA.Raj.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Fixed\raj_slow20260301-122605\RadarIfxAvian_00';
+    FIXED_DATA.Raj.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Fixed\raj_fast20260301-122717\RadarIfxAvian_00';
+    FIXED_DATA.Raj.festination = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Fixed\raj_festination20260301-122841\RadarIfxAvian_00';
+    FIXED_DATA.Raj.fog         = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Fixed\raj_fog20260301-123008\RadarIfxAvian_00';
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P7: Vijay REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    FIXED_DATA.Vijay.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Fixed\vijay_regular20260301-121317\RadarIfxAvian_00';
+    FIXED_DATA.Vijay.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Fixed\vijay_slow20260301-121435\RadarIfxAvian_00';
+    FIXED_DATA.Vijay.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Fixed\vijay_fast20260301-121540\RadarIfxAvian_00';
+    FIXED_DATA.Vijay.festination = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Fixed\vijay_festination20260301-121915\RadarIfxAvian_00';
+    FIXED_DATA.Vijay.fog         = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Fixed\vijay_fog20260301-122102\RadarIfxAvian_00';
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P8: Sudeep REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+    FIXED_DATA.Sudeep.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Fixed\sudeep_regular20260301-130319\RadarIfxAvian_00';
+    FIXED_DATA.Sudeep.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Fixed\sudeep_slow20260301-130516\RadarIfxAvian_00';
+    FIXED_DATA.Sudeep.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Fixed\sudeep_fast20260301-130636\RadarIfxAvian_00';
+    FIXED_DATA.Sudeep.festination = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Fixed\sudeep_festination20260301-130958\RadarIfxAvian_00';
+    FIXED_DATA.Sudeep.fog         = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Fixed\sudeep_fog20260301-131304\RadarIfxAvian_00';
+
+    % =====================================================================
+    % DATASET PATHS — SHOE-MOUNTED
+    % =====================================================================
+    SHOE_DATA = struct();
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P1: Mani REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+    SHOE_DATA.Mani.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\mani_regularshoe20260218-115859\RadarIfxAvian_00';
+    SHOE_DATA.Mani.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\mani_slowshoe20260218-120026\RadarIfxAvian_00';
+    SHOE_DATA.Mani.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\mani_fastshoe120260218-120252\RadarIfxAvian_00';
+    SHOE_DATA.Mani.festination = {'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Mani P1\Festination\trial 1'};
+    SHOE_DATA.Mani.fog         = {'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Mani P1\Fog\trial 1'};
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P2: Yogi REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+    SHOE_DATA.Yogi.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Yogi P2\Regular';
+    SHOE_DATA.Yogi.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Yogi P2\Slow';
+    SHOE_DATA.Yogi.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Yogi P2\Fast';
+    SHOE_DATA.Yogi.festination = {'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Yogi P2\Festination\trial 1'};
+    SHOE_DATA.Yogi.fog         = {'C:\Users\GANDITI YOGINATH\Documents\RadarFusionGUI\BGT60TR13C\yogi_shoe__hor_fog_trail220251230-022110\RadarIfxAvian_00'};
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P3: Srinath REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    SHOE_DATA.Srinath.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Srinath P3\Regular';
+    SHOE_DATA.Srinath.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Srinath P3\Slow';
+    SHOE_DATA.Srinath.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Srinath P3\Fast';
+    SHOE_DATA.Srinath.festination = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Srinath P3\Festination';
+    SHOE_DATA.Srinath.fog         = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Shoe\Srinath P3\Fog';
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P4: Manohar REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    SHOE_DATA.Manohar.regular     = 'C:\Users\GANDITI YOGINATH\Documents\RadarFusionGUI\BGT60TR13C\manohar_shoe_final_regular20260101-013928\RadarIfxAvian_00';
+    SHOE_DATA.Manohar.slow        = 'C:\Users\GANDITI YOGINATH\Documents\RadarFusionGUI\BGT60TR13C\manohar_shoe_final_slow20260101-014107\RadarIfxAvian_00';
+    SHOE_DATA.Manohar.fast        = 'C:\Users\GANDITI YOGINATH\Documents\RadarFusionGUI\BGT60TR13C\manohar_shoe_final_fast20260101-014241\RadarIfxAvian_00';
+    SHOE_DATA.Manohar.festination = 'C:\Users\GANDITI YOGINATH\Documents\RadarFusionGUI\BGT60TR13C\manohar_shoe_final_festination20260101-014409\RadarIfxAvian_00';
+    SHOE_DATA.Manohar.fog         = 'C:\Users\GANDITI YOGINATH\Documents\RadarFusionGUI\BGT60TR13C\manohar_shoe_final_fog20260101-014536\RadarIfxAvian_00';
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P5: Hari REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+    SHOE_DATA.Hari.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Shoe\hari_shoe_regular20260301-132502\RadarIfxAvian_00';
+    SHOE_DATA.Hari.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Shoe\hari_shoe_slow20260301-132624\RadarIfxAvian_00';
+    SHOE_DATA.Hari.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Shoe\hari_shoe_fast20260301-132751\RadarIfxAvian_00';
+    SHOE_DATA.Hari.festination = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Shoe\hari_shoe_festination20260301-133152\RadarIfxAvian_00';
+    SHOE_DATA.Hari.fog         = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Hari\Shoe\hari_shoe_fog20260301-133355\RadarIfxAvian_00';
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P6: Raj REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    SHOE_DATA.Raj.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Shoe\raj_shoe_regular20260301-124939\RadarIfxAvian_00';
+    SHOE_DATA.Raj.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Shoe\raj_shoe_slow20260301-125108\RadarIfxAvian_00';
+    SHOE_DATA.Raj.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Shoe\raj_shoe_fast20260301-125306\RadarIfxAvian_00';
+    SHOE_DATA.Raj.festination = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Shoe\raj_shoe_festination20260301-125440\RadarIfxAvian_00';
+    SHOE_DATA.Raj.fog         = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Raj\Shoe\raj_shoe_fog20260301-125623\RadarIfxAvian_00';
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P7: Vijay REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    SHOE_DATA.Vijay.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Shoe\vijay_shoe_regular20260301-123648\RadarIfxAvian_00';
+    SHOE_DATA.Vijay.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Shoe\vijay_shoe_slow20260301-123906\RadarIfxAvian_00';
+    SHOE_DATA.Vijay.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Shoe\vijay_shoe_fast20260301-124040\RadarIfxAvian_00';
+    SHOE_DATA.Vijay.festination = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Shoe\vijay_shoe_festination20260301-124307\RadarIfxAvian_00';
+    SHOE_DATA.Vijay.fog         = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Vijay\Shoe\vijay_shoe_fog20260301-124541\RadarIfxAvian_00';
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH P8: Sudeep REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+    SHOE_DATA.Sudeep.regular     = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Shoe\sudeep_shoe_regular20260301-134107\RadarIfxAvian_00';
+    SHOE_DATA.Sudeep.slow        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Shoe\sudeep_shoe_slow20260301-134233\RadarIfxAvian_00';
+    SHOE_DATA.Sudeep.fast        = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Shoe\sudeep_shoe_fast20260301-134417\RadarIfxAvian_00';
+    SHOE_DATA.Sudeep.festination = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Shoe\sudeep_shoe_festination20260301-134847\RadarIfxAvian_00';
+    SHOE_DATA.Sudeep.fog         = 'C:\Users\yoginathganditi\OneDrive - California State University, Sacramento\Documents\RadarFusionGUI\BGT60TR13C\Sudeep\Shoe\sudeep_shoe_fog20260301-135324\RadarIfxAvian_00';
+
+    % =====================================================================
+    % RESOLVE WHAT TO RUN
+    % =====================================================================
+    if RUN_ALL_SUBJECTS
+        subjects_to_run = ALL_SUBJECTS;
+    else
+        subjects_to_run = {SUBJECT};
+    end
+
+    if strcmp(PATTERN, 'all')
+        patterns_to_run = ALL_PATTERNS;
+    else
+        patterns_to_run = {PATTERN};
+    end
+
+    if strcmp(SENSOR, 'both')
+        sensors_to_run = {'fixed', 'shoe'};
+    else
+        sensors_to_run = {SENSOR};
+    end
+
+    total_planned = length(subjects_to_run) * length(patterns_to_run) * length(sensors_to_run);
+    fprintf('\n============================================================\n');
+    fprintf('BATCH START: %d subject(s) x %d pattern(s) x %d sensor(s) = %d run(s)\n', ...
+            length(subjects_to_run), length(patterns_to_run), length(sensors_to_run), total_planned);
+    fprintf('Auto-zoom: window=%.1fs | steps=%d-%d | regularity_thr=%.2f\n', ...
+            ZOOM_WINDOW_S, ZOOM_MIN_STEPS, ZOOM_MAX_STEPS, ZOOM_REGULARITY_THR);
+    fprintf('Per-pattern thresholds (fixed): regular=%.2f  slow=%.2f  fast=%.2f  festination=%.2f  fog=%.2f\n', ...
+            FIXED_THR.regular, FIXED_THR.slow, FIXED_THR.fast, FIXED_THR.festination, FIXED_THR.fog);
+    fprintf('Per-pattern thresholds (shoe) : regular=%.2f  slow=%.2f  fast=%.2f  festination=%.2f  fog=%.2f\n', ...
+            SHOE_THR.regular, SHOE_THR.slow, SHOE_THR.fast, SHOE_THR.festination, SHOE_THR.fog);
+    fprintf('============================================================\n');
+
+    % =====================================================================
+    % MAIN LOOP
+    % =====================================================================
+    total_ok   = 0;
+    failed_log = {};
+
+    for si = 1:length(subjects_to_run)
+        subj = subjects_to_run{si};
+
+        for pi = 1:length(patterns_to_run)
+            pat = patterns_to_run{pi};
+
+            % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+            % Per-pattern auto-zoom settings
+            % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+            switch pat
+                case {'festination', 'fog'}
+                    z_reg = 0.50;   % more irregular cadence — be lenient
+                    z_max = 10;     % more steps may fit in 2s window
+                    z_min = 3;
+                case 'slow'
+                    z_reg = 0.40;
+                    z_max = 5;
+                    z_min = 2;
+                otherwise            % regular, fast
+                    z_reg = ZOOM_REGULARITY_THR;
+                    z_max = ZOOM_MAX_STEPS;
+                    z_min = ZOOM_MIN_STEPS;
+            end
+
+            for sni = 1:length(sensors_to_run)
+                sen = sensors_to_run{sni};
+
+                fprintf('\nREPLACE_WITH_DASH_DASH- %s | %s | %s REPLACE_WITH_DASH_DASH-\n', subj, pat, upper(sen));
+
+                try
+                    if strcmp(sen, 'fixed')
+                        thr   = FIXED_THR.(pat);
+                        entry = FIXED_DATA.(subj).(pat);
+                        dispatch_entry(entry, 'fixed', EMPTY_ROOM_PATH, ...
+                            USE_SEGMENTS, SEGMENTS_MODE, STEP_MODE, ...
+                            thr, DYNAMIC_GATE_HALFWIDTH_M, ...
+                            SAVE_SEPARATE_PLOTS, SHOW_PLOTS, ...
+                            ZOOM_WINDOW_S, z_min, z_max, z_reg, ZOOM_TIME_RANGE, ...
+                            RUN_ALL_TRIALS_IF_LIST, TRIAL_INDEX_IF_LIST, subj, pat);
+                    else
+                        thr   = SHOE_THR.(pat);
+                        entry = SHOE_DATA.(subj).(pat);
+                        dispatch_entry(entry, 'shoe', '', ...
+                            USE_SEGMENTS, SEGMENTS_MODE, STEP_MODE, ...
+                            thr, 0, ...
+                            SAVE_SEPARATE_PLOTS, SHOW_PLOTS, ...
+                            ZOOM_WINDOW_S, z_min, z_max, z_reg, ZOOM_TIME_RANGE, ...
+                            RUN_ALL_TRIALS_IF_LIST, TRIAL_INDEX_IF_LIST, subj, pat);
+                    end
+
+                    total_ok = total_ok + 1;
+                    fprintf('  -> OK  (thr=%.2f m/s)\n', thr);
+
+                catch ME
+                    msg = sprintf('%s|%s|%s: %s', subj, pat, sen, ME.message);
+                    fprintf('  -> FAILED: %s\n', ME.message);
+                    failed_log{end+1} = msg; %#ok<AGROW>
+                end
+            end
+        end
+    end
+
+    % =====================================================================
+    % FINAL SUMMARY
+    % =====================================================================
+    fprintf('\n============================================================\n');
+    fprintf('BATCH COMPLETE: %d/%d succeeded\n', total_ok, total_planned);
+    if ~isempty(failed_log)
+        fprintf('Failed runs (%d):\n', length(failed_log));
+        for k = 1:length(failed_log)
+            fprintf('  [%d] %s\n', k, failed_log{k});
+        end
+    else
+        fprintf('All runs succeeded with no errors.\n');
+    end
+    fprintf('============================================================\n');
+end
+
+
+% =========================================================================
+% INTERNAL: handle single-path OR cell-array entries
+% =========================================================================
+function dispatch_entry(entry, sensor_type, empty_path, ...
+        use_segments, segments_mode, step_mode, ...
+        min_step_height, dyn_gate, save_plots, show_plots, ...
+        zoom_win, zoom_min, zoom_max, zoom_reg_thr, zoom_range, ...
+        run_all, trial_idx, subject, pattern)
+
+    paths = entry;
+    if ~iscell(paths), paths = {paths}; end
+    n = length(paths);
+
+    if n > 1 && run_all
+        fprintf('  %d trials for %s-%s (%s)\n', n, subject, pattern, upper(sensor_type));
+        for i = 1:n
+            fprintf('  Trial %d/%d...\n', i, n);
+            try
+                call_pipeline(char(paths{i}), sensor_type, empty_path, ...
+                    use_segments, segments_mode, step_mode, min_step_height, ...
+                    dyn_gate, save_plots, show_plots, ...
+                    zoom_win, zoom_min, zoom_max, zoom_reg_thr, zoom_range);
+                fprintf('  Trial %d: OK\n', i);
+            catch ME
+                fprintf('  Trial %d FAILED: %s\n', i, ME.message);
+            end
+        end
+    else
+        idx = min(max(trial_idx + 1, 1), n);
+        call_pipeline(char(paths{idx}), sensor_type, empty_path, ...
+            use_segments, segments_mode, step_mode, min_step_height, ...
+            dyn_gate, save_plots, show_plots, ...
+            zoom_win, zoom_min, zoom_max, zoom_reg_thr, zoom_range);
+    end
+end
+
+
+% =========================================================================
+% INTERNAL: call the appropriate pipeline function
+% =========================================================================
+function call_pipeline(walk_path, sensor_type, empty_path, ...
+        use_segments, segments_mode, step_mode, min_step_height, ...
+        dyn_gate, save_plots, show_plots, ...
+        zoom_win, zoom_min, zoom_max, zoom_reg_thr, zoom_range)
+
+    if strcmp(sensor_type, 'fixed')
+        run_fixed(empty_path, walk_path, ...
+            'frame_dt',                 0.078, ...
+            'r_gate',                   [1.5, 7.0], ...
+            'show',                     show_plots, ...
+            'use_segments',             use_segments, ...
+            'segments_mode',            segments_mode, ...
+            'segment_pad_s',            0.30, ...
+            'dynamic_gate_halfwidth_m', dyn_gate, ...
+            'step_min_toe_mps',         min_step_height, ...
+            'step_mode',                step_mode, ...
+            'save_separate_plots',      save_plots, ...
+            'zoom_time_range',          zoom_range, ...
+            'zoom_window_s',            zoom_win, ...
+            'zoom_min_steps',           zoom_min, ...
+            'zoom_max_steps',           zoom_max, ...
+            'zoom_regularity_thr',      zoom_reg_thr);
+    else
+        run_shoe_mounted(walk_path, ...
+            'r_gate',                   [0.10, 1.20], ...
+            'show',                     show_plots, ...
+            'use_segments',             use_segments, ...
+            'segments_mode',            segments_mode, ...
+            'segment_pad_s',            0.25, ...
+            'step_mode',                step_mode, ...
+            'min_step_height_mps',      min_step_height, ...
+            'height_prc',               10, ...
+            'save_separate_plots',      save_plots, ...
+            'zoom_time_range',          zoom_range, ...
+            'zoom_window_s',            zoom_win, ...
+            'zoom_min_steps',           zoom_min, ...
+            'zoom_max_steps',           zoom_max, ...
+            'zoom_regularity_thr',      zoom_reg_thr);
+    end
+end
+##### SOURCE END #####
+--></body></html>

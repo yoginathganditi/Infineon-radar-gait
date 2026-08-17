@@ -1,0 +1,1643 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>run_shoe_mounted</title><meta name="generator" content="MATLAB 9.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2026-04-16"><meta name="DC.source" content="run_shoe_mounted.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> report = run_shoe_mounted(recording_folder, varargin)
+<span class="comment">% RUN_SHOE_MOUNTED  Shoe-mounted radar gait analysis pipeline</span>
+<span class="comment">%                   with AUTO-ZOOM: finds best 2-second window with 3-5 clean steps</span>
+<span class="comment">%                   Publication-quality figure output (updated)</span>
+<span class="comment">%</span>
+<span class="comment">% Usage:</span>
+<span class="comment">%   report = run_shoe_mounted(recording_folder)</span>
+<span class="comment">%   report = run_shoe_mounted(recording_folder, 'zoom_window_s', 2.0, ...)</span>
+
+    p = inputParser;
+    addRequired(p, <span class="string">'recording_folder'</span>, @ischar);
+    addParameter(p, <span class="string">'frame_dt'</span>,            [],           @isnumeric);
+    addParameter(p, <span class="string">'r_gate'</span>,              [0.10, 1.20], @isnumeric);
+    addParameter(p, <span class="string">'show'</span>,                true,         @islogical);
+    addParameter(p, <span class="string">'gt_steps'</span>,            [],           @isnumeric);
+    addParameter(p, <span class="string">'min_gap_s'</span>,           0.5,          @isnumeric);
+    addParameter(p, <span class="string">'use_segments'</span>,        true,         @islogical);
+    addParameter(p, <span class="string">'segments_mode'</span>,       <span class="string">'hysteresis'</span>, @ischar);
+    addParameter(p, <span class="string">'segment_pad_s'</span>,       0.25,         @isnumeric);
+    addParameter(p, <span class="string">'step_mode'</span>,           <span class="string">'hybrid'</span>,     @ischar);
+    addParameter(p, <span class="string">'min_step_height_mps'</span>, 0.20,         @isnumeric);
+    addParameter(p, <span class="string">'height_prc'</span>,          10,           @isnumeric);
+    addParameter(p, <span class="string">'save_separate_plots'</span>, true,         @islogical);
+    addParameter(p, <span class="string">'zoom_time_range'</span>,     [],           @isnumeric);
+    addParameter(p, <span class="string">'zoom_window_s'</span>,       2.0,          @isnumeric);
+    addParameter(p, <span class="string">'zoom_min_steps'</span>,      3,            @isnumeric);
+    addParameter(p, <span class="string">'zoom_max_steps'</span>,      6,            @isnumeric);
+    addParameter(p, <span class="string">'zoom_regularity_thr'</span>, 0.35,         @isnumeric);
+    addParameter(p, <span class="string">'rt_vmin_percentile'</span>,  35.0,         @isnumeric);
+    addParameter(p, <span class="string">'vt_vmin_percentile'</span>,  8.0,          @isnumeric);
+    addParameter(p, <span class="string">'vmax_percentile'</span>,     99.7,         @isnumeric);
+    addParameter(p, <span class="string">'smooth_sigma_y'</span>,      0.3,          @isnumeric);
+    addParameter(p, <span class="string">'smooth_sigma_x'</span>,      0.3,          @isnumeric);
+    addParameter(p, <span class="string">'rt_interpolation'</span>,    <span class="string">'bilinear'</span>,   @ischar);
+    addParameter(p, <span class="string">'vt_interpolation'</span>,    <span class="string">'none'</span>,       @ischar);
+    addParameter(p, <span class="string">'v_plot_lim'</span>,          [-3.8, 3.8],  @isnumeric);
+    addParameter(p, <span class="string">'dpi_png'</span>,             600,          @isnumeric);
+
+    parse(p, recording_folder, varargin{:});
+
+    recording_folder    = char(recording_folder);
+    frame_dt            = p.Results.frame_dt;
+    r_gate              = p.Results.r_gate;
+    show                = p.Results.show;
+    use_segments        = p.Results.use_segments;
+    segments_mode       = p.Results.segments_mode;
+    segment_pad_s       = p.Results.segment_pad_s;
+    step_mode           = p.Results.step_mode;
+    min_step_height_mps = p.Results.min_step_height_mps;
+    height_prc          = p.Results.height_prc;
+    save_sep_plots      = p.Results.save_separate_plots;
+    zoom_time_range     = p.Results.zoom_time_range;
+    zoom_window_s       = p.Results.zoom_window_s;
+    zoom_min_steps      = p.Results.zoom_min_steps;
+    zoom_max_steps      = p.Results.zoom_max_steps;
+    zoom_regularity_thr = p.Results.zoom_regularity_thr;
+    dpi_png             = p.Results.dpi_png;
+    v_plot_lim          = p.Results.v_plot_lim;
+    rt_vmin_prc         = p.Results.rt_vmin_percentile;
+    vt_vmin_prc         = p.Results.vt_vmin_percentile;
+    vmax_prc            = p.Results.vmax_percentile;
+
+    fprintf(<span class="string">'\n=== SHOE-MOUNTED RADAR GAIT ANALYSIS ===\n'</span>);
+    fprintf(<span class="string">'Recording folder: %s\n'</span>, recording_folder);
+    fprintf(<span class="string">'Range gate: [%.2f, %.2f] m\n\n'</span>, r_gate(1), r_gate(2));
+
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    <span class="comment">% 1. Load data</span>
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    fprintf(<span class="string">'1. Loading data...\n'</span>);
+    [adc, cfg_json, ~] = load_recording(recording_folder, [128, 3, 64]);
+    cfg = derive_cfg_params(cfg_json);
+
+    <span class="keyword">if</span> isempty(frame_dt)
+        frame_dt = cfg.frame_T;
+    <span class="keyword">end</span>
+
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    <span class="comment">% 2. RD / RT / VT maps</span>
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    fprintf(<span class="string">'2. Computing RD/RT/VT maps...\n'</span>);
+    [rd, rt] = compute_rd_rt(adc, cfg, 256, cfg.num_chirps);
+
+    r_axis = make_range_axis(cfg, 256);
+    v_axis = make_velocity_axis(cfg, cfg.num_chirps);
+    r_idx  = range_gate_indices(r_axis, r_gate(1), r_gate(2));
+
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    <span class="comment">% 3. Range centroid</span>
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    fprintf(<span class="string">'3. Computing range centroid...\n'</span>);
+    rc_m = range_centroid(rt, r_axis, r_idx);
+
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    <span class="comment">% 4. VT + toe envelope</span>
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    fprintf(<span class="string">'4. Computing VT map &amp; toe envelope...\n'</span>);
+    vt = vt_from_rd_static(rd, r_idx, <span class="string">'sum'</span>);
+    [toe, ~] = toe_envelope(vt, v_axis);
+
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    <span class="comment">% 5. Walking segments</span>
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    fprintf(<span class="string">'5. Finding walking segments...\n'</span>);
+    [walk_segments, thr_on, thr_off] = find_walking_segments(toe, frame_dt, <span class="keyword">...</span>
+        <span class="string">'segments_mode'</span>, segments_mode, <span class="string">'walk_k'</span>, 0.15, <span class="keyword">...</span>
+        <span class="string">'min_walk_s'</span>, 0.8, <span class="string">'min_gap_s'</span>, p.Results.min_gap_s);
+
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    <span class="comment">% 6. Step detection</span>
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    fprintf(<span class="string">'6. Detecting steps...\n'</span>);
+    [peaks_all, height_thr_used, prom_used] = detect_steps_from_toe(toe, frame_dt, <span class="keyword">...</span>
+        <span class="string">'prom_k'</span>, 0.02, <span class="string">'prom_floor'</span>, 0.010, <span class="keyword">...</span>
+        <span class="string">'height_prc'</span>, height_prc, <span class="keyword">...</span>
+        <span class="string">'min_step_toe_mps'</span>, min_step_height_mps, <span class="keyword">...</span>
+        <span class="string">'min_step_distance_s'</span>, 0.18);
+
+    <span class="keyword">if</span> use_segments &amp;&amp; ~isempty(walk_segments)
+        walking_mask = build_walking_mask(length(toe), walk_segments, frame_dt, segment_pad_s);
+    <span class="keyword">else</span>
+        walking_mask = true(size(toe));
+    <span class="keyword">end</span>
+
+    peaks_walk = peaks_all(walking_mask(peaks_all));
+
+    <span class="keyword">if</span> strcmp(step_mode, <span class="string">'walking'</span>)
+        steps_for_stats     = peaks_walk;
+        steps_for_plot_all  = [];
+        steps_for_plot_used = steps_for_stats;
+    <span class="keyword">elseif</span> strcmp(step_mode, <span class="string">'all'</span>)
+        steps_for_stats     = peaks_all;
+        steps_for_plot_all  = peaks_all;
+        steps_for_plot_used = peaks_all;
+    <span class="keyword">else</span> <span class="comment">% hybrid</span>
+        steps_for_stats     = peaks_walk;
+        steps_for_plot_all  = peaks_all;
+        steps_for_plot_used = steps_for_stats;
+    <span class="keyword">end</span>
+
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    <span class="comment">% 7. AUTO-ZOOM</span>
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    <span class="keyword">if</span> isempty(zoom_time_range)
+        fprintf(<span class="string">'7. Auto-selecting zoom window (%.1f s, %d-%d steps)...\n'</span>, <span class="keyword">...</span>
+                zoom_window_s, zoom_min_steps, zoom_max_steps);
+        zoom_time_range = auto_select_zoom_window_shoe( <span class="keyword">...</span>
+            steps_for_plot_used, toe, frame_dt, walk_segments, <span class="keyword">...</span>
+            zoom_window_s, zoom_min_steps, zoom_max_steps, zoom_regularity_thr);
+
+        <span class="keyword">if</span> ~isempty(zoom_time_range)
+            fprintf(<span class="string">'   Auto-zoom selected: [%.2f, %.2f] s\n'</span>, zoom_time_range(1), zoom_time_range(2));
+        <span class="keyword">else</span>
+            fprintf(<span class="string">'   Auto-zoom: no suitable window found (will skip zoom plots).\n'</span>);
+        <span class="keyword">end</span>
+    <span class="keyword">else</span>
+        fprintf(<span class="string">'7. Using manual zoom_time_range: [%.2f, %.2f] s\n'</span>, zoom_time_range(1), zoom_time_range(2));
+    <span class="keyword">end</span>
+
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    <span class="comment">% 8. Step table</span>
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    fprintf(<span class="string">'8. Computing step table...\n'</span>);
+    step_rows = compute_step_table(steps_for_stats, rc_m, v_axis, vt, frame_dt);
+
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    <span class="comment">% 9. Statistics</span>
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    fprintf(<span class="string">'9. Computing statistics...\n'</span>);
+    total_steps_all     = length(peaks_all);
+    total_steps_walking = length(peaks_walk);
+    total_steps_used    = length(steps_for_stats);
+    total_duration      = length(toe) * frame_dt;
+
+    <span class="keyword">if</span> use_segments &amp;&amp; ~isempty(walk_segments) &amp;&amp; ~strcmp(step_mode, <span class="string">'all'</span>)
+        walking_duration = sum(cellfun(@(s) (s(2) - s(1)) * frame_dt, walk_segments));
+    <span class="keyword">else</span>
+        <span class="keyword">if</span> length(steps_for_stats) &gt;= 2
+            walking_duration = (steps_for_stats(end) - steps_for_stats(1)) * frame_dt;
+        <span class="keyword">else</span>
+            walking_duration = 0.0;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    cadence_spm = (total_steps_used / max(walking_duration, eps)) * 60.0;
+    <span class="keyword">if</span> isnan(cadence_spm) || isinf(cadence_spm), cadence_spm = 0.0; <span class="keyword">end</span>
+
+    <span class="keyword">if</span> use_segments &amp;&amp; ~isempty(walk_segments) &amp;&amp; ~strcmp(step_mode, <span class="string">'all'</span>)
+        step_times   = step_intervals_within_segments(steps_for_stats, walk_segments, frame_dt);
+        stride_times = stride_intervals_within_segments(steps_for_stats, walk_segments, frame_dt);
+    <span class="keyword">else</span>
+        s = sort(steps_for_stats);
+        <span class="keyword">if</span> length(s) &gt;= 2, step_times = diff(s) * frame_dt;
+        <span class="keyword">else</span>, step_times = []; <span class="keyword">end</span>
+        <span class="keyword">if</span> length(s) &gt;= 3, stride_times = (s(3:end) - s(1:end-2)) * frame_dt;
+        <span class="keyword">else</span>, stride_times = []; <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    [mean_step_time,   step_time_cv]   = mean_and_cv(step_times);
+    [mean_stride_time, stride_time_cv] = mean_and_cv(stride_times);
+
+    v_app_vals   = cellfun(@(r) r.v_app,      step_rows);
+    v_sep_vals   = cellfun(@(r) r.v_sep,      step_rows);
+    d_align_vals = cellfun(@(r) r.d_align_cm, step_rows);
+
+    peak_vapp_mean  = mean(v_app_vals);
+    peak_vsep_mean  = mean(v_sep_vals);
+    d_align_mean    = mean(d_align_vals);
+    clearance_var   = std(d_align_vals);
+    sym_idx         = symmetry_index_from_alt_steps(v_sep_vals);
+
+    <span class="keyword">if</span> use_segments &amp;&amp; ~isempty(walk_segments) &amp;&amp; ~strcmp(step_mode, <span class="string">'all'</span>)
+        fog_count = fog_count_within_segments(steps_for_stats, walk_segments, frame_dt, 1.5);
+    <span class="keyword">else</span>
+        fog_count = sum(step_times &gt; 1.5);
+    <span class="keyword">end</span>
+
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    <span class="comment">% 10. Report struct</span>
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    report = struct();
+    report.step_mode                  = step_mode;
+    report.total_steps_all            = total_steps_all;
+    report.total_steps_walking        = total_steps_walking;
+    report.total_steps_used_for_stats = total_steps_used;
+    report.cadence_spm                = sprintf(<span class="string">'%.2f'</span>, cadence_spm);
+    report.mean_step_time_s           = sprintf(<span class="string">'%.3f'</span>, mean_step_time);
+    report.step_time_cv_pct           = sprintf(<span class="string">'%.2f'</span>, step_time_cv);
+    report.mean_stride_time_s         = sprintf(<span class="string">'%.3f'</span>, mean_stride_time);
+    report.stride_time_cv_pct         = sprintf(<span class="string">'%.2f'</span>, stride_time_cv);
+    report.peak_vapp_mean_mps         = sprintf(<span class="string">'%.3f'</span>, peak_vapp_mean);
+    report.peak_vsep_mean_mps         = sprintf(<span class="string">'%.3f'</span>, peak_vsep_mean);
+    report.symmetry_index             = sprintf(<span class="string">'%.3f'</span>, sym_idx);
+    report.d_align_mean_cm            = sprintf(<span class="string">'%.2f'</span>, d_align_mean);
+    report.clearance_variability_cm   = sprintf(<span class="string">'%.2f'</span>, clearance_var);
+    report.fog_episode_count          = fog_count;
+    report.num_walking_segments       = length(walk_segments);
+    report.total_duration_s           = sprintf(<span class="string">'%.2f'</span>, total_duration);
+    report.walking_duration_s         = sprintf(<span class="string">'%.2f'</span>, walking_duration);
+    report.use_segments               = use_segments;
+    report.segments_mode              = segments_mode;
+    report.segment_pad_s              = sprintf(<span class="string">'%.2f'</span>, segment_pad_s);
+    report.walk_thr_on                = sprintf(<span class="string">'%.3f'</span>, thr_on);
+    report.walk_thr_off               = sprintf(<span class="string">'%.3f'</span>, thr_off);
+    report.min_step_height_mps        = sprintf(<span class="string">'%.2f'</span>, min_step_height_mps);
+    report.step_height_thr_used       = sprintf(<span class="string">'%.3f'</span>, height_thr_used);
+    report.step_height_prc            = height_prc;
+    report.step_prom_used             = sprintf(<span class="string">'%.3f'</span>, prom_used);
+
+    <span class="keyword">if</span> ~isempty(zoom_time_range)
+        report.auto_zoom_start_s = sprintf(<span class="string">'%.2f'</span>, zoom_time_range(1));
+        report.auto_zoom_end_s   = sprintf(<span class="string">'%.2f'</span>, zoom_time_range(2));
+    <span class="keyword">end</span>
+
+    <span class="keyword">if</span> ~isempty(p.Results.gt_steps) &amp;&amp; p.Results.gt_steps &gt; 0
+        err = total_steps_used - p.Results.gt_steps;
+        report.gt_steps             = p.Results.gt_steps;
+        report.step_count_error     = err;
+        report.step_count_error_pct = sprintf(<span class="string">'%.2f'</span>, (100.0 * err / p.Results.gt_steps));
+    <span class="keyword">end</span>
+
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    <span class="comment">% 11. Save outputs</span>
+    <span class="comment">% ------------------------------------------------------------------ %</span>
+    fprintf(<span class="string">'10. Saving results...\n'</span>);
+    save_gait_data_to_csv_shoe(fullfile(recording_folder, <span class="string">'Gait_Analysis_Results_SHOE.csv'</span>), report, step_rows);
+
+    <span class="keyword">if</span> save_sep_plots
+        save_separate_plots_shoe(recording_folder, rt, vt, toe, r_axis, v_axis, <span class="keyword">...</span>
+            frame_dt, walk_segments, steps_for_plot_all, steps_for_plot_used, <span class="keyword">...</span>
+            min_step_height_mps, report, zoom_time_range, <span class="keyword">...</span>
+            rt_vmin_prc, vt_vmin_prc, vmax_prc, dpi_png, v_plot_lim);
+    <span class="keyword">end</span>
+
+    fprintf(<span class="string">'\n=== ANALYSIS COMPLETE ===\n'</span>);
+    fprintf(<span class="string">'Total steps: %d\n'</span>, total_steps_used);
+    fprintf(<span class="string">'Cadence: %s spm\n'</span>, report.cadence_spm);
+    fprintf(<span class="string">'Swing velocity: %s m/s\n'</span>, report.peak_vsep_mean_mps);
+    <span class="keyword">if</span> ~isempty(zoom_time_range)
+        fprintf(<span class="string">'Auto-zoom window: [%.2f, %.2f] s\n'</span>, zoom_time_range(1), zoom_time_range(2));
+    <span class="keyword">end</span>
+
+    <span class="keyword">if</span> show
+        fprintf(<span class="string">'\nReport fields:\n'</span>);
+        fn = fieldnames(report);
+        <span class="keyword">for</span> i = 1:length(fn)
+            val = report.(fn{i});
+            <span class="keyword">if</span> islogical(val),     val_str = char(string(val));
+            <span class="keyword">elseif</span> isnumeric(val), val_str = sprintf(<span class="string">'%g'</span>, val);
+            <span class="keyword">else</span>,                  val_str = char(val);
+            <span class="keyword">end</span>
+            fprintf(<span class="string">'  %s: %s\n'</span>, fn{i}, val_str);
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">%  PUBLICATION-QUALITY PLOT SAVING  &#8212;  SHOE-MOUNTED</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> save_separate_plots_shoe(out_folder, rt, vt, toe, r_axis, v_axis, <span class="keyword">...</span>
+        frame_dt, walk_segments, peaks_all, peaks_used, min_step_mps, <span class="keyword">...</span>
+        report, zoom_time_range, rt_vmin_prc, vt_vmin_prc, vmax_prc, dpi_png, v_plot_lim)
+
+    n_frames = size(rt, 2);
+    t_axis   = (0 : n_frames-1) * frame_dt;
+
+    <span class="comment">% Convert maps to dB</span>
+    rt_dB = 20 * log10(abs(rt) + eps);
+    vt_dB = 20 * log10(abs(vt) + eps);
+
+    <span class="comment">% ---- 1. RT map  (wide landscape: matches original style) ----------</span>
+    fh = pub_fig_shoe(12.0, 4.2);
+    ax = axes(fh, <span class="string">'Units'</span>, <span class="string">'normalized'</span>, <span class="string">'Position'</span>, [0.07 0.13 0.84 0.78]);
+    plot_rt_map_shoe(ax, rt_dB, r_axis, t_axis, rt_vmin_prc, vmax_prc);
+    pub_export_shoe(fh, fullfile(out_folder, <span class="string">'RT_Range_Time'</span>), dpi_png);
+    close(fh);
+
+    <span class="comment">% ---- 2. VT map  (wide landscape) ---------------------------------</span>
+    fh = pub_fig_shoe(12.0, 4.2);
+    ax = axes(fh, <span class="string">'Units'</span>, <span class="string">'normalized'</span>, <span class="string">'Position'</span>, [0.07 0.13 0.84 0.78]);
+    plot_vt_map_shoe(ax, vt_dB, v_axis, t_axis, vt_vmin_prc, vmax_prc, v_plot_lim);
+    pub_export_shoe(fh, fullfile(out_folder, <span class="string">'VT_Velocity_Time'</span>), dpi_png);
+    close(fh);
+
+    <span class="comment">% ---- 3. Toe envelope + segments + peaks --------------------------</span>
+    fh = pub_fig_shoe(8.5, 3.8);
+    set(fh, <span class="string">'Renderer'</span>, <span class="string">'painters'</span>);
+    ax = axes(fh, <span class="string">'Units'</span>, <span class="string">'normalized'</span>, <span class="string">'Position'</span>, [0.09 0.14 0.88 0.78]);
+    plot_toe_envelope_shoe(ax, toe, frame_dt, walk_segments, <span class="keyword">...</span>
+        peaks_all, peaks_used, min_step_mps, <span class="keyword">...</span>
+        <span class="string">'Toe Envelope + Peaks + Segments'</span>);
+    pub_export_shoe(fh, fullfile(out_folder, <span class="string">'ToeEnvelope_Peaks_Segments'</span>), dpi_png);
+    close(fh);
+
+    <span class="comment">% ---- 4. Zoomed step window ---------------------------------------</span>
+    <span class="keyword">if</span> ~isempty(zoom_time_range)
+        fh = pub_fig_shoe(5.5, 3.4);
+        set(fh, <span class="string">'Renderer'</span>, <span class="string">'painters'</span>);
+        ax = axes(fh, <span class="string">'Units'</span>, <span class="string">'normalized'</span>, <span class="string">'Position'</span>, [0.13 0.15 0.83 0.76]);
+        plot_zoom_window_shoe(ax, toe, frame_dt, peaks_used, min_step_mps, zoom_time_range);
+        pub_export_shoe(fh, fullfile(out_folder, <span class="string">'Zoomed_Steps'</span>), dpi_png);
+        close(fh);
+    <span class="keyword">end</span>
+
+    <span class="comment">% ---- 5. Summary text panel ---------------------------------------</span>
+    fh = pub_fig_shoe(5.5, 5.0);
+    set(fh, <span class="string">'Renderer'</span>, <span class="string">'painters'</span>);
+    ax = axes(fh, <span class="string">'Units'</span>, <span class="string">'normalized'</span>, <span class="string">'Position'</span>, [0 0 1 1]);
+    plot_summary_panel_shoe(ax, report);
+    pub_export_shoe(fh, fullfile(out_folder, <span class="string">'Summary_Table'</span>), dpi_png);
+    close(fh);
+
+    fprintf(<span class="string">'   Figures saved to: %s\n'</span>, out_folder);
+<span class="keyword">end</span>
+
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">%  FIGURE CREATION HELPER</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> fh = pub_fig_shoe(width_in, height_in)
+<span class="comment">% PUB_FIG_SHOE  Create a correctly sized, white-background publication figure.</span>
+    fh = figure( <span class="keyword">...</span>
+        <span class="string">'Units'</span>,         <span class="string">'inches'</span>, <span class="keyword">...</span>
+        <span class="string">'Position'</span>,      [1 1 width_in height_in], <span class="keyword">...</span>
+        <span class="string">'PaperUnits'</span>,    <span class="string">'inches'</span>, <span class="keyword">...</span>
+        <span class="string">'PaperSize'</span>,     [width_in height_in], <span class="keyword">...</span>
+        <span class="string">'PaperPosition'</span>, [0 0 width_in height_in], <span class="keyword">...</span>
+        <span class="string">'Color'</span>,         <span class="string">'white'</span>, <span class="keyword">...</span>
+        <span class="string">'Renderer'</span>,      <span class="string">'opengl'</span>, <span class="keyword">...</span>
+        <span class="string">'Visible'</span>,       <span class="string">'off'</span>);
+    set(fh, <span class="string">'DefaultAxesFontName'</span>,      <span class="string">'Helvetica'</span>);
+    set(fh, <span class="string">'DefaultTextFontName'</span>,      <span class="string">'Helvetica'</span>);
+    set(fh, <span class="string">'DefaultAxesFontSize'</span>,      12);
+    set(fh, <span class="string">'DefaultAxesLabelFontSizeMultiplier'</span>, 1.08);
+    set(fh, <span class="string">'DefaultAxesTitleFontSizeMultiplier'</span>, 1.15);
+<span class="keyword">end</span>
+
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">%  EXPORT HELPER</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> pub_export_shoe(fh, filepath_no_ext, dpi)
+    <span class="keyword">if</span> nargin &lt; 3, dpi = 600; <span class="keyword">end</span>
+
+    png_path = [filepath_no_ext <span class="string">'.png'</span>];
+    exportgraphics(fh, png_path, <span class="keyword">...</span>
+        <span class="string">'Resolution'</span>,      dpi, <span class="keyword">...</span>
+        <span class="string">'BackgroundColor'</span>, <span class="string">'white'</span>, <span class="keyword">...</span>
+        <span class="string">'ContentType'</span>,     <span class="string">'image'</span>);
+    fprintf(<span class="string">'   Saved PNG : %s  (%d dpi)\n'</span>, png_path, dpi);
+
+    <span class="keyword">try</span>
+        pdf_path = [filepath_no_ext <span class="string">'.pdf'</span>];
+        exportgraphics(fh, pdf_path, <span class="keyword">...</span>
+            <span class="string">'BackgroundColor'</span>, <span class="string">'white'</span>, <span class="keyword">...</span>
+            <span class="string">'ContentType'</span>,     <span class="string">'vector'</span>);
+        fprintf(<span class="string">'   Saved PDF : %s\n'</span>, pdf_path);
+    <span class="keyword">catch</span>
+        <span class="comment">% Skip gracefully on older MATLAB versions</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">%  RT MAP PLOT  (shoe-mounted: narrow range, burst-pattern signal)</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> plot_rt_map_shoe(ax, rt_dB, r_axis, t_axis, vmin_prc, vmax_prc)
+<span class="comment">% PLOT_RT_MAP_SHOE  Publication-quality range-time map for shoe-mounted radar.</span>
+<span class="comment">%   The shoe RT has a very short range axis (~0-1 m) with vertically bursting</span>
+<span class="comment">%   energy, so we use less smoothing and tighter colour scaling.</span>
+
+    valid = rt_dB(isfinite(rt_dB));
+    clo   = prctile(valid(:), vmin_prc);
+    chi   = prctile(valid(:), vmax_prc);
+
+    <span class="comment">% Very mild smoothing &#8212; preserve the sharp foot-contact burst structure</span>
+    rt_plot = imgaussfilt(double(rt_dB), [0.5 0.3]);
+
+    imagesc(ax, t_axis, r_axis, rt_plot);
+    axis(ax, <span class="string">'xy'</span>);
+    set_clim_shoe(ax, clo, chi);
+    ylim(ax, [r_axis(1) r_axis(end)]);
+    xlim(ax, [t_axis(1) t_axis(end)]);
+
+    colormap(ax, jet);
+    cb = colorbar(ax, <span class="string">'eastoutside'</span>);
+    cb.Label.String     = <span class="string">'dB'</span>;
+    cb.Label.FontSize   = 12;
+    cb.Label.FontWeight = <span class="string">'bold'</span>;
+    cb.FontSize         = 11;
+    cb.LineWidth        = 0.8;
+    cb.TickDirection    = <span class="string">'out'</span>;
+
+    xlabel(ax, <span class="string">'Time (s)'</span>,   <span class="string">'FontSize'</span>, 13, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+    ylabel(ax, <span class="string">'Range (m)'</span>,  <span class="string">'FontSize'</span>, 13, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+    ax.FontSize   = 12;
+    ax.TickLength = [0.012 0.012];
+    ax.TickDir    = <span class="string">'out'</span>;
+    ax.LineWidth  = 1.0;
+    ax.Box        = <span class="string">'on'</span>;
+    ax.Layer      = <span class="string">'top'</span>;
+    ax.XGrid      = <span class="string">'off'</span>;
+    ax.YGrid      = <span class="string">'off'</span>;
+
+    <span class="comment">% Y-axis tick spacing: for short range, fine ticks help readability</span>
+    <span class="keyword">if</span> (r_axis(end) - r_axis(1)) &lt; 1.5
+        ax.YTick = round(r_axis(1)*10)/10 : 0.1 : round(r_axis(end)*10)/10;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">%  VT MAP PLOT  (shoe-mounted: symmetric burst pattern about 0 m/s)</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> plot_vt_map_shoe(ax, vt_dB, v_axis, t_axis, vmin_prc, vmax_prc, v_lim)
+<span class="comment">% PLOT_VT_MAP_SHOE  Publication-quality velocity-time map for shoe-mounted radar.</span>
+
+    <span class="keyword">if</span> nargin &lt; 7 || isempty(v_lim), v_lim = [-4 4]; <span class="keyword">end</span>
+
+    valid = vt_dB(isfinite(vt_dB));
+    clo   = prctile(valid(:), vmin_prc);
+    chi   = prctile(valid(:), vmax_prc);
+
+    <span class="comment">% Modest smoothing &#8212; the shoe VT has sharp, narrow spikes that should be</span>
+    <span class="comment">% preserved; over-smoothing merges them into blobs.</span>
+    vt_plot = imgaussfilt(double(vt_dB), [0.5 0.3]);
+
+    imagesc(ax, t_axis, v_axis, vt_plot);
+    axis(ax, <span class="string">'xy'</span>);
+    set_clim_shoe(ax, clo, chi);
+    ylim(ax, v_lim);
+    xlim(ax, [t_axis(1) t_axis(end)]);
+
+    colormap(ax, jet);
+    cb = colorbar(ax, <span class="string">'eastoutside'</span>);
+    cb.Label.String     = <span class="string">'dB'</span>;
+    cb.Label.FontSize   = 12;
+    cb.Label.FontWeight = <span class="string">'bold'</span>;
+    cb.FontSize         = 11;
+    cb.LineWidth        = 0.8;
+    cb.TickDirection    = <span class="string">'out'</span>;
+
+    hold(ax, <span class="string">'on'</span>);
+    plot(ax, [t_axis(1) t_axis(end)], [0 0], <span class="string">'--'</span>, <span class="keyword">...</span>
+         <span class="string">'Color'</span>, [0.85 0.85 0.85], <span class="string">'LineWidth'</span>, 0.9);
+    hold(ax, <span class="string">'off'</span>);
+
+    xlabel(ax, <span class="string">'Time (s)'</span>,                         <span class="string">'FontSize'</span>, 13, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+    ylabel(ax, <span class="string">'Relative radial velocity (m/s)'</span>,   <span class="string">'FontSize'</span>, 13, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+    ax.FontSize   = 12;
+    ax.TickLength = [0.012 0.012];
+    ax.TickDir    = <span class="string">'out'</span>;
+    ax.LineWidth  = 1.0;
+    ax.Box        = <span class="string">'on'</span>;
+    ax.Layer      = <span class="string">'top'</span>;
+    ax.XGrid      = <span class="string">'off'</span>;
+    ax.YGrid      = <span class="string">'off'</span>;
+<span class="keyword">end</span>
+
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">%  TOE ENVELOPE PLOT  (shoe-mounted)</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> plot_toe_envelope_shoe(ax, toe, frame_dt, walk_segments, <span class="keyword">...</span>
+                                 peaks_all, peaks_used, min_step_mps, title_str)
+<span class="comment">% PLOT_TOE_ENVELOPE_SHOE  Publication-quality toe envelope for shoe-mounted radar.</span>
+
+    t_ax  = (0 : length(toe)-1) * frame_dt;
+    y_max = max(toe) * 1.20;
+
+    hold(ax, <span class="string">'on'</span>);
+
+    <span class="comment">% --- Walking segment shading</span>
+    <span class="keyword">for</span> k = 1:length(walk_segments)
+        t0_seg = (walk_segments{k}(1) - 1) * frame_dt;
+        t1_seg = (walk_segments{k}(2) - 1) * frame_dt;
+        patch(ax, [t0_seg t1_seg t1_seg t0_seg], [0 0 y_max y_max], <span class="keyword">...</span>
+              [0.78 0.93 0.78], <span class="string">'EdgeColor'</span>, <span class="string">'none'</span>, <span class="string">'FaceAlpha'</span>, 0.55);
+    <span class="keyword">end</span>
+
+    <span class="comment">% --- Threshold</span>
+    yline(ax, min_step_mps, <span class="keyword">...</span>
+          <span class="string">'Color'</span>, [0.85 0.10 0.10], <span class="keyword">...</span>
+          <span class="string">'LineStyle'</span>, <span class="string">'--'</span>, <span class="string">'LineWidth'</span>, 1.2);
+    text(ax, t_ax(end)*0.99, min_step_mps * 1.08, <span class="keyword">...</span>
+         sprintf(<span class="string">'Min step toe = %.2f m/s'</span>, min_step_mps), <span class="keyword">...</span>
+         <span class="string">'HorizontalAlignment'</span>, <span class="string">'right'</span>, <span class="string">'FontSize'</span>, 9.5, <span class="keyword">...</span>
+         <span class="string">'Color'</span>, [0.85 0.10 0.10]);
+
+    <span class="comment">% --- Toe envelope</span>
+    plot(ax, t_ax, toe, <span class="string">'k-'</span>, <span class="string">'LineWidth'</span>, 1.8);
+
+    <span class="comment">% --- All peaks (grey)</span>
+    <span class="keyword">if</span> ~isempty(peaks_all)
+        t_all = (peaks_all - 1) * frame_dt;
+        plot(ax, t_all, toe(peaks_all), <span class="string">'o'</span>, <span class="keyword">...</span>
+             <span class="string">'MarkerSize'</span>, 5, <span class="keyword">...</span>
+             <span class="string">'MarkerFaceColor'</span>, [0.55 0.55 0.55], <span class="keyword">...</span>
+             <span class="string">'MarkerEdgeColor'</span>, <span class="string">'none'</span>);
+    <span class="keyword">end</span>
+
+    <span class="comment">% --- Used steps (red)</span>
+    <span class="keyword">if</span> ~isempty(peaks_used)
+        t_used = (peaks_used - 1) * frame_dt;
+        plot(ax, t_used, toe(peaks_used), <span class="string">'o'</span>, <span class="keyword">...</span>
+             <span class="string">'MarkerSize'</span>, 8, <span class="keyword">...</span>
+             <span class="string">'MarkerFaceColor'</span>, [0.85 0.10 0.10], <span class="keyword">...</span>
+             <span class="string">'MarkerEdgeColor'</span>, <span class="string">'white'</span>, <span class="string">'LineWidth'</span>, 0.8);
+    <span class="keyword">end</span>
+
+    hold(ax, <span class="string">'off'</span>);
+
+    <span class="comment">% --- Legend</span>
+    leg_h = []; leg_entries = {};
+    <span class="keyword">if</span> ~isempty(peaks_all)
+        hold(ax,<span class="string">'on'</span>);
+        leg_h(end+1)    = plot(ax, NaN, NaN, <span class="string">'o'</span>, <span class="string">'MarkerSize'</span>, 5, <span class="keyword">...</span>
+                               <span class="string">'MarkerFaceColor'</span>, [0.55 0.55 0.55], <span class="string">'MarkerEdgeColor'</span>, <span class="string">'none'</span>);
+        leg_entries{end+1} = sprintf(<span class="string">'All peaks (n=%d)'</span>, length(peaks_all));
+        hold(ax,<span class="string">'off'</span>);
+    <span class="keyword">end</span>
+    hold(ax,<span class="string">'on'</span>);
+    leg_h(end+1)    = plot(ax, NaN, NaN, <span class="string">'o'</span>, <span class="string">'MarkerSize'</span>, 8, <span class="keyword">...</span>
+                           <span class="string">'MarkerFaceColor'</span>, [0.85 0.10 0.10], <span class="keyword">...</span>
+                           <span class="string">'MarkerEdgeColor'</span>, <span class="string">'white'</span>, <span class="string">'LineWidth'</span>, 0.8);
+    leg_entries{end+1} = sprintf(<span class="string">'Steps used (n=%d)'</span>, length(peaks_used));
+    hold(ax,<span class="string">'off'</span>);
+
+    <span class="keyword">if</span> ~isempty(leg_h)
+        legend(ax, leg_h, leg_entries, <span class="keyword">...</span>
+               <span class="string">'Location'</span>, <span class="string">'northeast'</span>, <span class="string">'FontSize'</span>, 10, <span class="keyword">...</span>
+               <span class="string">'Box'</span>, <span class="string">'on'</span>, <span class="string">'EdgeColor'</span>, [0.4 0.4 0.4]);
+    <span class="keyword">end</span>
+
+    title(ax, title_str,  <span class="string">'FontSize'</span>, 14, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+    xlabel(ax, <span class="string">'Time (s)'</span>,                         <span class="string">'FontSize'</span>, 13, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+    ylabel(ax, <span class="string">'Estimated radial velocity (m/s)'</span>,  <span class="string">'FontSize'</span>, 13, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+    xlim(ax, [0 t_ax(end)]);
+    ylim(ax, [0 y_max]);
+    ax.FontSize      = 12;
+    ax.TickLength    = [0.010 0.010];
+    ax.TickDir       = <span class="string">'out'</span>;
+    ax.LineWidth     = 1.0;
+    ax.Box           = <span class="string">'on'</span>;
+    ax.XGrid         = <span class="string">'on'</span>;
+    ax.YGrid         = <span class="string">'on'</span>;
+    ax.GridAlpha     = 0.18;
+    ax.GridLineStyle = <span class="string">':'</span>;
+    ax.Layer         = <span class="string">'top'</span>;
+<span class="keyword">end</span>
+
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">%  ZOOMED STEP WINDOW PLOT  (shoe-mounted)</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> plot_zoom_window_shoe(ax, toe, frame_dt, peaks_used, min_step_mps, zoom_range)
+<span class="comment">% PLOT_ZOOM_WINDOW_SHOE  Zoomed view with step interval annotations.</span>
+
+    t0_fr = max(1,           round(zoom_range(1) / frame_dt) + 1);
+    t1_fr = min(length(toe), round(zoom_range(2) / frame_dt) + 1);
+
+    t_zoom   = ((t0_fr-1) : (t1_fr-1)) * frame_dt;
+    toe_zoom = toe(t0_fr : t1_fr);
+    y_max    = max(toe_zoom) * 1.30;
+
+    hold(ax, <span class="string">'on'</span>);
+    plot(ax, t_zoom, toe_zoom, <span class="string">'k-'</span>, <span class="string">'LineWidth'</span>, 2.2);
+    yline(ax, min_step_mps, <span class="string">'r--'</span>, <span class="string">'LineWidth'</span>, 1.0);
+
+    mask_z = (peaks_used &gt;= t0_fr) &amp; (peaks_used &lt;= t1_fr);
+    pk_z   = peaks_used(mask_z);
+
+    <span class="keyword">if</span> ~isempty(pk_z)
+        t_pk = (pk_z - 1) * frame_dt;
+        plot(ax, t_pk, toe(pk_z), <span class="string">'o'</span>, <span class="keyword">...</span>
+             <span class="string">'MarkerSize'</span>, 9, <span class="keyword">...</span>
+             <span class="string">'MarkerFaceColor'</span>, [0.85 0.10 0.10], <span class="keyword">...</span>
+             <span class="string">'MarkerEdgeColor'</span>, <span class="string">'white'</span>, <span class="string">'LineWidth'</span>, 1.0);
+
+        <span class="keyword">for</span> ii = 1 : length(pk_z) - 1
+            dt_step = (pk_z(ii+1) - pk_z(ii)) * frame_dt;
+            x_mid   = mean([(pk_z(ii)-1) (pk_z(ii+1)-1)]) * frame_dt;
+            y_ann   = max(toe(pk_z(ii)), toe(pk_z(ii+1))) + y_max * 0.07;
+            text(ax, x_mid, y_ann, sprintf(<span class="string">'%.2f s'</span>, dt_step), <span class="keyword">...</span>
+                 <span class="string">'HorizontalAlignment'</span>, <span class="string">'center'</span>, <span class="string">'FontSize'</span>, 9.5, <span class="keyword">...</span>
+                 <span class="string">'Color'</span>, [0.15 0.20 0.60], <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    hold(ax, <span class="string">'off'</span>);
+
+    xlim(ax, zoom_range);
+    ylim(ax, [0 y_max]);
+    xlabel(ax, <span class="string">'Time (s)'</span>,                         <span class="string">'FontSize'</span>, 13, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+    ylabel(ax, <span class="string">'Estimated radial velocity (m/s)'</span>,  <span class="string">'FontSize'</span>, 13, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+    title(ax, sprintf(<span class="string">'Zoomed Steps  [%.1f &#8211; %.1f s]'</span>, zoom_range(1), zoom_range(2)), <span class="keyword">...</span>
+          <span class="string">'FontSize'</span>, 13, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+    ax.FontSize      = 12;
+    ax.TickLength    = [0.012 0.012];
+    ax.TickDir       = <span class="string">'out'</span>;
+    ax.LineWidth     = 1.0;
+    ax.Box           = <span class="string">'on'</span>;
+    ax.XGrid         = <span class="string">'on'</span>;
+    ax.YGrid         = <span class="string">'on'</span>;
+    ax.GridAlpha     = 0.18;
+    ax.GridLineStyle = <span class="string">':'</span>;
+    ax.Layer         = <span class="string">'top'</span>;
+<span class="keyword">end</span>
+
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">%  SUMMARY PANEL  (shoe-mounted)</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> plot_summary_panel_shoe(ax, report)
+<span class="comment">% PLOT_SUMMARY_PANEL_SHOE  Clean typeset summary of shoe-mounted gait metrics.</span>
+
+    axis(ax, <span class="string">'off'</span>);
+    ax.Color = <span class="string">'white'</span>;
+
+    fields = { <span class="keyword">...</span>
+        <span class="string">'Step mode'</span>,              report.step_mode; <span class="keyword">...</span>
+        <span class="string">'Total peaks (ALL)'</span>,      num2str(report.total_steps_all); <span class="keyword">...</span>
+        <span class="string">'Peaks in segments'</span>,      num2str(report.total_steps_walking); <span class="keyword">...</span>
+        <span class="string">'Steps used for stats'</span>,   num2str(report.total_steps_used_for_stats); <span class="keyword">...</span>
+        <span class="string">'Cadence'</span>,                [report.cadence_spm <span class="string">' spm'</span>]; <span class="keyword">...</span>
+        <span class="string">'Mean step time'</span>,         [report.mean_step_time_s <span class="string">' s'</span>]; <span class="keyword">...</span>
+        <span class="string">'Step time CV'</span>,           [report.step_time_cv_pct <span class="string">' %'</span>]; <span class="keyword">...</span>
+        <span class="string">'Mean stride time'</span>,       [report.mean_stride_time_s <span class="string">' s'</span>]; <span class="keyword">...</span>
+        <span class="string">'Stride time CV'</span>,         [report.stride_time_cv_pct <span class="string">' %'</span>]; <span class="keyword">...</span>
+        <span class="string">'Swing velocity (v_sep)'</span>, [report.peak_vsep_mean_mps <span class="string">' m/s'</span>]; <span class="keyword">...</span>
+        <span class="string">'Symmetry index'</span>,         report.symmetry_index; <span class="keyword">...</span>
+        <span class="string">'FOG gaps'</span>,               num2str(report.fog_episode_count); <span class="keyword">...</span>
+        <span class="string">'# Walk segments'</span>,        num2str(report.num_walking_segments); <span class="keyword">...</span>
+        <span class="string">'Walking duration'</span>,       [report.walking_duration_s <span class="string">' s'</span>]; <span class="keyword">...</span>
+    };
+
+    n     = size(fields, 1);
+    x_lbl = 0.05;
+    x_val = 0.62;
+    y_top = 0.93;
+    dy    = 0.057;
+
+    text(ax, 0.50, 0.985, <span class="string">'Gait Analysis Summary &#8212; Shoe-Mounted Radar'</span>, <span class="keyword">...</span>
+         <span class="string">'Units'</span>, <span class="string">'normalized'</span>, <span class="string">'HorizontalAlignment'</span>, <span class="string">'center'</span>, <span class="keyword">...</span>
+         <span class="string">'FontSize'</span>, 13, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>, <span class="string">'FontName'</span>, <span class="string">'Helvetica'</span>);
+
+    annotation(ax.Parent, <span class="string">'line'</span>, [0.03 0.97], [0.948 0.948], <span class="keyword">...</span>
+               <span class="string">'Color'</span>, [0.3 0.3 0.3], <span class="string">'LineWidth'</span>, 1.0);
+
+    <span class="keyword">for</span> ii = 1:n
+        y_pos = y_top - (ii-1) * dy;
+        <span class="keyword">if</span> mod(ii, 2) == 0
+            annotation(ax.Parent, <span class="string">'rectangle'</span>, [0.03 y_pos-dy*0.45 0.94 dy*0.92], <span class="keyword">...</span>
+                       <span class="string">'FaceColor'</span>, [0.95 0.95 0.97], <span class="string">'EdgeColor'</span>, <span class="string">'none'</span>, <span class="string">'FaceAlpha'</span>, 0.8);
+        <span class="keyword">end</span>
+        text(ax, x_lbl, y_pos, fields{ii,1}, <span class="keyword">...</span>
+             <span class="string">'Units'</span>, <span class="string">'normalized'</span>, <span class="string">'FontSize'</span>, 11, <span class="keyword">...</span>
+             <span class="string">'FontName'</span>, <span class="string">'Helvetica'</span>, <span class="string">'Color'</span>, [0.15 0.15 0.15]);
+        text(ax, x_val, y_pos, fields{ii,2}, <span class="keyword">...</span>
+             <span class="string">'Units'</span>, <span class="string">'normalized'</span>, <span class="string">'FontSize'</span>, 11, <span class="keyword">...</span>
+             <span class="string">'FontName'</span>, <span class="string">'Helvetica'</span>, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>, <span class="string">'Color'</span>, [0.05 0.20 0.50]);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">%  CLIM HELPER</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> set_clim_shoe(ax, clo, chi)
+    <span class="keyword">try</span>
+        clim(ax, [clo chi]);
+    <span class="keyword">catch</span>
+        axes(ax); <span class="comment">%#ok&lt;MAXES&gt;</span>
+        caxis([clo chi]);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+
+<span class="comment">% =========================================================================</span>
+<span class="comment">%  AUTO-ZOOM HELPER</span>
+<span class="comment">% =========================================================================</span>
+<span class="keyword">function</span> zoom_range = auto_select_zoom_window_shoe(steps_used, toe, frame_dt, <span class="keyword">...</span>
+        walk_segments, window_s, min_steps, max_steps, regularity_thr)
+
+    zoom_range = [];
+    <span class="keyword">if</span> isempty(steps_used) || length(steps_used) &lt; min_steps
+        <span class="keyword">return</span>;
+    <span class="keyword">end</span>
+
+    win_frames   = round(window_s / frame_dt);
+    n_frames     = length(toe);
+    step_times_s = steps_used * frame_dt;
+
+    <span class="keyword">if</span> ~isempty(walk_segments)
+        valid_starts = [];
+        <span class="keyword">for</span> k = 1:length(walk_segments)
+            s0 = walk_segments{k}(1);
+            s1 = walk_segments{k}(2);
+            seg_starts = s0 : round(0.1/frame_dt) : max(s0, s1 - win_frames);
+            valid_starts = [valid_starts, seg_starts]; <span class="comment">%#ok&lt;AGROW&gt;</span>
+        <span class="keyword">end</span>
+    <span class="keyword">else</span>
+        valid_starts = 1 : round(0.1/frame_dt) : max(1, n_frames - win_frames);
+    <span class="keyword">end</span>
+
+    <span class="keyword">if</span> isempty(valid_starts), <span class="keyword">return</span>; <span class="keyword">end</span>
+
+    best_score = -Inf;
+    best_range = [];
+
+    <span class="keyword">for</span> fi = valid_starts
+        fe = fi + win_frames - 1;
+        <span class="keyword">if</span> fe &gt; n_frames, <span class="keyword">continue</span>; <span class="keyword">end</span>
+
+        t0 = (fi - 1) * frame_dt;
+        t1 = (fe - 1) * frame_dt;
+
+        mask  = (step_times_s &gt;= t0) &amp; (step_times_s &lt;= t1);
+        n_win = sum(mask);
+
+        <span class="keyword">if</span> n_win &lt; min_steps || n_win &gt; max_steps, <span class="keyword">continue</span>; <span class="keyword">end</span>
+
+        t_win = step_times_s(mask);
+        <span class="keyword">if</span> length(t_win) &gt;= 2
+            ivs = diff(t_win);
+            cv  = std(ivs) / (mean(ivs) + eps);
+        <span class="keyword">else</span>
+            cv = Inf;
+        <span class="keyword">end</span>
+
+        <span class="keyword">if</span> cv &gt; regularity_thr, <span class="keyword">continue</span>; <span class="keyword">end</span>
+
+        toe_mean = mean(toe(fi:fe));
+        score    = n_win * toe_mean / (cv + 0.05);
+
+        <span class="keyword">if</span> score &gt; best_score
+            best_score = score;
+            best_range = [t0, t1];
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    zoom_range = best_range;
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in run_shoe_mounted (line 39)
+    parse(p, recording_folder, varargin{:});
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2023a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function report = run_shoe_mounted(recording_folder, varargin)
+% RUN_SHOE_MOUNTED  Shoe-mounted radar gait analysis pipeline
+%                   with AUTO-ZOOM: finds best 2-second window with 3-5 clean steps
+%                   Publication-quality figure output (updated)
+%
+% Usage:
+%   report = run_shoe_mounted(recording_folder)
+%   report = run_shoe_mounted(recording_folder, 'zoom_window_s', 2.0, ...)
+
+    p = inputParser;
+    addRequired(p, 'recording_folder', @ischar);
+    addParameter(p, 'frame_dt',            [],           @isnumeric);
+    addParameter(p, 'r_gate',              [0.10, 1.20], @isnumeric);
+    addParameter(p, 'show',                true,         @islogical);
+    addParameter(p, 'gt_steps',            [],           @isnumeric);
+    addParameter(p, 'min_gap_s',           0.5,          @isnumeric);
+    addParameter(p, 'use_segments',        true,         @islogical);
+    addParameter(p, 'segments_mode',       'hysteresis', @ischar);
+    addParameter(p, 'segment_pad_s',       0.25,         @isnumeric);
+    addParameter(p, 'step_mode',           'hybrid',     @ischar);
+    addParameter(p, 'min_step_height_mps', 0.20,         @isnumeric);
+    addParameter(p, 'height_prc',          10,           @isnumeric);
+    addParameter(p, 'save_separate_plots', true,         @islogical);
+    addParameter(p, 'zoom_time_range',     [],           @isnumeric);
+    addParameter(p, 'zoom_window_s',       2.0,          @isnumeric);
+    addParameter(p, 'zoom_min_steps',      3,            @isnumeric);
+    addParameter(p, 'zoom_max_steps',      6,            @isnumeric);
+    addParameter(p, 'zoom_regularity_thr', 0.35,         @isnumeric);
+    addParameter(p, 'rt_vmin_percentile',  35.0,         @isnumeric);
+    addParameter(p, 'vt_vmin_percentile',  8.0,          @isnumeric);
+    addParameter(p, 'vmax_percentile',     99.7,         @isnumeric);
+    addParameter(p, 'smooth_sigma_y',      0.3,          @isnumeric);
+    addParameter(p, 'smooth_sigma_x',      0.3,          @isnumeric);
+    addParameter(p, 'rt_interpolation',    'bilinear',   @ischar);
+    addParameter(p, 'vt_interpolation',    'none',       @ischar);
+    addParameter(p, 'v_plot_lim',          [-3.8, 3.8],  @isnumeric);
+    addParameter(p, 'dpi_png',             600,          @isnumeric);
+
+    parse(p, recording_folder, varargin{:});
+
+    recording_folder    = char(recording_folder);
+    frame_dt            = p.Results.frame_dt;
+    r_gate              = p.Results.r_gate;
+    show                = p.Results.show;
+    use_segments        = p.Results.use_segments;
+    segments_mode       = p.Results.segments_mode;
+    segment_pad_s       = p.Results.segment_pad_s;
+    step_mode           = p.Results.step_mode;
+    min_step_height_mps = p.Results.min_step_height_mps;
+    height_prc          = p.Results.height_prc;
+    save_sep_plots      = p.Results.save_separate_plots;
+    zoom_time_range     = p.Results.zoom_time_range;
+    zoom_window_s       = p.Results.zoom_window_s;
+    zoom_min_steps      = p.Results.zoom_min_steps;
+    zoom_max_steps      = p.Results.zoom_max_steps;
+    zoom_regularity_thr = p.Results.zoom_regularity_thr;
+    dpi_png             = p.Results.dpi_png;
+    v_plot_lim          = p.Results.v_plot_lim;
+    rt_vmin_prc         = p.Results.rt_vmin_percentile;
+    vt_vmin_prc         = p.Results.vt_vmin_percentile;
+    vmax_prc            = p.Results.vmax_percentile;
+
+    fprintf('\n=== SHOE-MOUNTED RADAR GAIT ANALYSIS ===\n');
+    fprintf('Recording folder: %s\n', recording_folder);
+    fprintf('Range gate: [%.2f, %.2f] m\n\n', r_gate(1), r_gate(2));
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    % 1. Load data
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    fprintf('1. Loading data...\n');
+    [adc, cfg_json, ~] = load_recording(recording_folder, [128, 3, 64]);
+    cfg = derive_cfg_params(cfg_json);
+
+    if isempty(frame_dt)
+        frame_dt = cfg.frame_T;
+    end
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    % 2. RD / RT / VT maps
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    fprintf('2. Computing RD/RT/VT maps...\n');
+    [rd, rt] = compute_rd_rt(adc, cfg, 256, cfg.num_chirps);
+
+    r_axis = make_range_axis(cfg, 256);
+    v_axis = make_velocity_axis(cfg, cfg.num_chirps);
+    r_idx  = range_gate_indices(r_axis, r_gate(1), r_gate(2));
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    % 3. Range centroid
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    fprintf('3. Computing range centroid...\n');
+    rc_m = range_centroid(rt, r_axis, r_idx);
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    % 4. VT + toe envelope
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    fprintf('4. Computing VT map & toe envelope...\n');
+    vt = vt_from_rd_static(rd, r_idx, 'sum');
+    [toe, ~] = toe_envelope(vt, v_axis);
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    % 5. Walking segments
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    fprintf('5. Finding walking segments...\n');
+    [walk_segments, thr_on, thr_off] = find_walking_segments(toe, frame_dt, ...
+        'segments_mode', segments_mode, 'walk_k', 0.15, ...
+        'min_walk_s', 0.8, 'min_gap_s', p.Results.min_gap_s);
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    % 6. Step detection
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    fprintf('6. Detecting steps...\n');
+    [peaks_all, height_thr_used, prom_used] = detect_steps_from_toe(toe, frame_dt, ...
+        'prom_k', 0.02, 'prom_floor', 0.010, ...
+        'height_prc', height_prc, ...
+        'min_step_toe_mps', min_step_height_mps, ...
+        'min_step_distance_s', 0.18);
+
+    if use_segments && ~isempty(walk_segments)
+        walking_mask = build_walking_mask(length(toe), walk_segments, frame_dt, segment_pad_s);
+    else
+        walking_mask = true(size(toe));
+    end
+
+    peaks_walk = peaks_all(walking_mask(peaks_all));
+
+    if strcmp(step_mode, 'walking')
+        steps_for_stats     = peaks_walk;
+        steps_for_plot_all  = [];
+        steps_for_plot_used = steps_for_stats;
+    elseif strcmp(step_mode, 'all')
+        steps_for_stats     = peaks_all;
+        steps_for_plot_all  = peaks_all;
+        steps_for_plot_used = peaks_all;
+    else % hybrid
+        steps_for_stats     = peaks_walk;
+        steps_for_plot_all  = peaks_all;
+        steps_for_plot_used = steps_for_stats;
+    end
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    % 7. AUTO-ZOOM
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    if isempty(zoom_time_range)
+        fprintf('7. Auto-selecting zoom window (%.1f s, %d-%d steps)...\n', ...
+                zoom_window_s, zoom_min_steps, zoom_max_steps);
+        zoom_time_range = auto_select_zoom_window_shoe( ...
+            steps_for_plot_used, toe, frame_dt, walk_segments, ...
+            zoom_window_s, zoom_min_steps, zoom_max_steps, zoom_regularity_thr);
+
+        if ~isempty(zoom_time_range)
+            fprintf('   Auto-zoom selected: [%.2f, %.2f] s\n', zoom_time_range(1), zoom_time_range(2));
+        else
+            fprintf('   Auto-zoom: no suitable window found (will skip zoom plots).\n');
+        end
+    else
+        fprintf('7. Using manual zoom_time_range: [%.2f, %.2f] s\n', zoom_time_range(1), zoom_time_range(2));
+    end
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    % 8. Step table
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    fprintf('8. Computing step table...\n');
+    step_rows = compute_step_table(steps_for_stats, rc_m, v_axis, vt, frame_dt);
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    % 9. Statistics
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    fprintf('9. Computing statistics...\n');
+    total_steps_all     = length(peaks_all);
+    total_steps_walking = length(peaks_walk);
+    total_steps_used    = length(steps_for_stats);
+    total_duration      = length(toe) * frame_dt;
+
+    if use_segments && ~isempty(walk_segments) && ~strcmp(step_mode, 'all')
+        walking_duration = sum(cellfun(@(s) (s(2) - s(1)) * frame_dt, walk_segments));
+    else
+        if length(steps_for_stats) >= 2
+            walking_duration = (steps_for_stats(end) - steps_for_stats(1)) * frame_dt;
+        else
+            walking_duration = 0.0;
+        end
+    end
+
+    cadence_spm = (total_steps_used / max(walking_duration, eps)) * 60.0;
+    if isnan(cadence_spm) || isinf(cadence_spm), cadence_spm = 0.0; end
+
+    if use_segments && ~isempty(walk_segments) && ~strcmp(step_mode, 'all')
+        step_times   = step_intervals_within_segments(steps_for_stats, walk_segments, frame_dt);
+        stride_times = stride_intervals_within_segments(steps_for_stats, walk_segments, frame_dt);
+    else
+        s = sort(steps_for_stats);
+        if length(s) >= 2, step_times = diff(s) * frame_dt;
+        else, step_times = []; end
+        if length(s) >= 3, stride_times = (s(3:end) - s(1:end-2)) * frame_dt;
+        else, stride_times = []; end
+    end
+
+    [mean_step_time,   step_time_cv]   = mean_and_cv(step_times);
+    [mean_stride_time, stride_time_cv] = mean_and_cv(stride_times);
+
+    v_app_vals   = cellfun(@(r) r.v_app,      step_rows);
+    v_sep_vals   = cellfun(@(r) r.v_sep,      step_rows);
+    d_align_vals = cellfun(@(r) r.d_align_cm, step_rows);
+
+    peak_vapp_mean  = mean(v_app_vals);
+    peak_vsep_mean  = mean(v_sep_vals);
+    d_align_mean    = mean(d_align_vals);
+    clearance_var   = std(d_align_vals);
+    sym_idx         = symmetry_index_from_alt_steps(v_sep_vals);
+
+    if use_segments && ~isempty(walk_segments) && ~strcmp(step_mode, 'all')
+        fog_count = fog_count_within_segments(steps_for_stats, walk_segments, frame_dt, 1.5);
+    else
+        fog_count = sum(step_times > 1.5);
+    end
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    % 10. Report struct
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    report = struct();
+    report.step_mode                  = step_mode;
+    report.total_steps_all            = total_steps_all;
+    report.total_steps_walking        = total_steps_walking;
+    report.total_steps_used_for_stats = total_steps_used;
+    report.cadence_spm                = sprintf('%.2f', cadence_spm);
+    report.mean_step_time_s           = sprintf('%.3f', mean_step_time);
+    report.step_time_cv_pct           = sprintf('%.2f', step_time_cv);
+    report.mean_stride_time_s         = sprintf('%.3f', mean_stride_time);
+    report.stride_time_cv_pct         = sprintf('%.2f', stride_time_cv);
+    report.peak_vapp_mean_mps         = sprintf('%.3f', peak_vapp_mean);
+    report.peak_vsep_mean_mps         = sprintf('%.3f', peak_vsep_mean);
+    report.symmetry_index             = sprintf('%.3f', sym_idx);
+    report.d_align_mean_cm            = sprintf('%.2f', d_align_mean);
+    report.clearance_variability_cm   = sprintf('%.2f', clearance_var);
+    report.fog_episode_count          = fog_count;
+    report.num_walking_segments       = length(walk_segments);
+    report.total_duration_s           = sprintf('%.2f', total_duration);
+    report.walking_duration_s         = sprintf('%.2f', walking_duration);
+    report.use_segments               = use_segments;
+    report.segments_mode              = segments_mode;
+    report.segment_pad_s              = sprintf('%.2f', segment_pad_s);
+    report.walk_thr_on                = sprintf('%.3f', thr_on);
+    report.walk_thr_off               = sprintf('%.3f', thr_off);
+    report.min_step_height_mps        = sprintf('%.2f', min_step_height_mps);
+    report.step_height_thr_used       = sprintf('%.3f', height_thr_used);
+    report.step_height_prc            = height_prc;
+    report.step_prom_used             = sprintf('%.3f', prom_used);
+
+    if ~isempty(zoom_time_range)
+        report.auto_zoom_start_s = sprintf('%.2f', zoom_time_range(1));
+        report.auto_zoom_end_s   = sprintf('%.2f', zoom_time_range(2));
+    end
+
+    if ~isempty(p.Results.gt_steps) && p.Results.gt_steps > 0
+        err = total_steps_used - p.Results.gt_steps;
+        report.gt_steps             = p.Results.gt_steps;
+        report.step_count_error     = err;
+        report.step_count_error_pct = sprintf('%.2f', (100.0 * err / p.Results.gt_steps));
+    end
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    % 11. Save outputs
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH %
+    fprintf('10. Saving results...\n');
+    save_gait_data_to_csv_shoe(fullfile(recording_folder, 'Gait_Analysis_Results_SHOE.csv'), report, step_rows);
+
+    if save_sep_plots
+        save_separate_plots_shoe(recording_folder, rt, vt, toe, r_axis, v_axis, ...
+            frame_dt, walk_segments, steps_for_plot_all, steps_for_plot_used, ...
+            min_step_height_mps, report, zoom_time_range, ...
+            rt_vmin_prc, vt_vmin_prc, vmax_prc, dpi_png, v_plot_lim);
+    end
+
+    fprintf('\n=== ANALYSIS COMPLETE ===\n');
+    fprintf('Total steps: %d\n', total_steps_used);
+    fprintf('Cadence: %s spm\n', report.cadence_spm);
+    fprintf('Swing velocity: %s m/s\n', report.peak_vsep_mean_mps);
+    if ~isempty(zoom_time_range)
+        fprintf('Auto-zoom window: [%.2f, %.2f] s\n', zoom_time_range(1), zoom_time_range(2));
+    end
+
+    if show
+        fprintf('\nReport fields:\n');
+        fn = fieldnames(report);
+        for i = 1:length(fn)
+            val = report.(fn{i});
+            if islogical(val),     val_str = char(string(val));
+            elseif isnumeric(val), val_str = sprintf('%g', val);
+            else,                  val_str = char(val);
+            end
+            fprintf('  %s: %s\n', fn{i}, val_str);
+        end
+    end
+end
+
+
+% =========================================================================
+%  PUBLICATION-QUALITY PLOT SAVING  —  SHOE-MOUNTED
+% =========================================================================
+function save_separate_plots_shoe(out_folder, rt, vt, toe, r_axis, v_axis, ...
+        frame_dt, walk_segments, peaks_all, peaks_used, min_step_mps, ...
+        report, zoom_time_range, rt_vmin_prc, vt_vmin_prc, vmax_prc, dpi_png, v_plot_lim)
+
+    n_frames = size(rt, 2);
+    t_axis   = (0 : n_frames-1) * frame_dt;
+
+    % Convert maps to dB
+    rt_dB = 20 * log10(abs(rt) + eps);
+    vt_dB = 20 * log10(abs(vt) + eps);
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH 1. RT map  (wide landscape: matches original style) REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    fh = pub_fig_shoe(12.0, 4.2);
+    ax = axes(fh, 'Units', 'normalized', 'Position', [0.07 0.13 0.84 0.78]);
+    plot_rt_map_shoe(ax, rt_dB, r_axis, t_axis, rt_vmin_prc, vmax_prc);
+    pub_export_shoe(fh, fullfile(out_folder, 'RT_Range_Time'), dpi_png);
+    close(fh);
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH 2. VT map  (wide landscape) REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+    fh = pub_fig_shoe(12.0, 4.2);
+    ax = axes(fh, 'Units', 'normalized', 'Position', [0.07 0.13 0.84 0.78]);
+    plot_vt_map_shoe(ax, vt_dB, v_axis, t_axis, vt_vmin_prc, vmax_prc, v_plot_lim);
+    pub_export_shoe(fh, fullfile(out_folder, 'VT_Velocity_Time'), dpi_png);
+    close(fh);
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH 3. Toe envelope + segments + peaks REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    fh = pub_fig_shoe(8.5, 3.8);
+    set(fh, 'Renderer', 'painters');
+    ax = axes(fh, 'Units', 'normalized', 'Position', [0.09 0.14 0.88 0.78]);
+    plot_toe_envelope_shoe(ax, toe, frame_dt, walk_segments, ...
+        peaks_all, peaks_used, min_step_mps, ...
+        'Toe Envelope + Peaks + Segments');
+    pub_export_shoe(fh, fullfile(out_folder, 'ToeEnvelope_Peaks_Segments'), dpi_png);
+    close(fh);
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH 4. Zoomed step window REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+    if ~isempty(zoom_time_range)
+        fh = pub_fig_shoe(5.5, 3.4);
+        set(fh, 'Renderer', 'painters');
+        ax = axes(fh, 'Units', 'normalized', 'Position', [0.13 0.15 0.83 0.76]);
+        plot_zoom_window_shoe(ax, toe, frame_dt, peaks_used, min_step_mps, zoom_time_range);
+        pub_export_shoe(fh, fullfile(out_folder, 'Zoomed_Steps'), dpi_png);
+        close(fh);
+    end
+
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH 5. Summary text panel REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+    fh = pub_fig_shoe(5.5, 5.0);
+    set(fh, 'Renderer', 'painters');
+    ax = axes(fh, 'Units', 'normalized', 'Position', [0 0 1 1]);
+    plot_summary_panel_shoe(ax, report);
+    pub_export_shoe(fh, fullfile(out_folder, 'Summary_Table'), dpi_png);
+    close(fh);
+
+    fprintf('   Figures saved to: %s\n', out_folder);
+end
+
+
+% =========================================================================
+%  FIGURE CREATION HELPER
+% =========================================================================
+function fh = pub_fig_shoe(width_in, height_in)
+% PUB_FIG_SHOE  Create a correctly sized, white-background publication figure.
+    fh = figure( ...
+        'Units',         'inches', ...
+        'Position',      [1 1 width_in height_in], ...
+        'PaperUnits',    'inches', ...
+        'PaperSize',     [width_in height_in], ...
+        'PaperPosition', [0 0 width_in height_in], ...
+        'Color',         'white', ...
+        'Renderer',      'opengl', ...
+        'Visible',       'off');
+    set(fh, 'DefaultAxesFontName',      'Helvetica');
+    set(fh, 'DefaultTextFontName',      'Helvetica');
+    set(fh, 'DefaultAxesFontSize',      12);
+    set(fh, 'DefaultAxesLabelFontSizeMultiplier', 1.08);
+    set(fh, 'DefaultAxesTitleFontSizeMultiplier', 1.15);
+end
+
+
+% =========================================================================
+%  EXPORT HELPER
+% =========================================================================
+function pub_export_shoe(fh, filepath_no_ext, dpi)
+    if nargin < 3, dpi = 600; end
+
+    png_path = [filepath_no_ext '.png'];
+    exportgraphics(fh, png_path, ...
+        'Resolution',      dpi, ...
+        'BackgroundColor', 'white', ...
+        'ContentType',     'image');
+    fprintf('   Saved PNG : %s  (%d dpi)\n', png_path, dpi);
+
+    try
+        pdf_path = [filepath_no_ext '.pdf'];
+        exportgraphics(fh, pdf_path, ...
+            'BackgroundColor', 'white', ...
+            'ContentType',     'vector');
+        fprintf('   Saved PDF : %s\n', pdf_path);
+    catch
+        % Skip gracefully on older MATLAB versions
+    end
+end
+
+
+% =========================================================================
+%  RT MAP PLOT  (shoe-mounted: narrow range, burst-pattern signal)
+% =========================================================================
+function plot_rt_map_shoe(ax, rt_dB, r_axis, t_axis, vmin_prc, vmax_prc)
+% PLOT_RT_MAP_SHOE  Publication-quality range-time map for shoe-mounted radar.
+%   The shoe RT has a very short range axis (~0-1 m) with vertically bursting
+%   energy, so we use less smoothing and tighter colour scaling.
+
+    valid = rt_dB(isfinite(rt_dB));
+    clo   = prctile(valid(:), vmin_prc);
+    chi   = prctile(valid(:), vmax_prc);
+
+    % Very mild smoothing — preserve the sharp foot-contact burst structure
+    rt_plot = imgaussfilt(double(rt_dB), [0.5 0.3]);
+
+    imagesc(ax, t_axis, r_axis, rt_plot);
+    axis(ax, 'xy');
+    set_clim_shoe(ax, clo, chi);
+    ylim(ax, [r_axis(1) r_axis(end)]);
+    xlim(ax, [t_axis(1) t_axis(end)]);
+
+    colormap(ax, jet);
+    cb = colorbar(ax, 'eastoutside');
+    cb.Label.String     = 'dB';
+    cb.Label.FontSize   = 12;
+    cb.Label.FontWeight = 'bold';
+    cb.FontSize         = 11;
+    cb.LineWidth        = 0.8;
+    cb.TickDirection    = 'out';
+
+    xlabel(ax, 'Time (s)',   'FontSize', 13, 'FontWeight', 'bold');
+    ylabel(ax, 'Range (m)',  'FontSize', 13, 'FontWeight', 'bold');
+    ax.FontSize   = 12;
+    ax.TickLength = [0.012 0.012];
+    ax.TickDir    = 'out';
+    ax.LineWidth  = 1.0;
+    ax.Box        = 'on';
+    ax.Layer      = 'top';
+    ax.XGrid      = 'off';
+    ax.YGrid      = 'off';
+
+    % Y-axis tick spacing: for short range, fine ticks help readability
+    if (r_axis(end) - r_axis(1)) < 1.5
+        ax.YTick = round(r_axis(1)*10)/10 : 0.1 : round(r_axis(end)*10)/10;
+    end
+end
+
+
+% =========================================================================
+%  VT MAP PLOT  (shoe-mounted: symmetric burst pattern about 0 m/s)
+% =========================================================================
+function plot_vt_map_shoe(ax, vt_dB, v_axis, t_axis, vmin_prc, vmax_prc, v_lim)
+% PLOT_VT_MAP_SHOE  Publication-quality velocity-time map for shoe-mounted radar.
+
+    if nargin < 7 || isempty(v_lim), v_lim = [-4 4]; end
+
+    valid = vt_dB(isfinite(vt_dB));
+    clo   = prctile(valid(:), vmin_prc);
+    chi   = prctile(valid(:), vmax_prc);
+
+    % Modest smoothing — the shoe VT has sharp, narrow spikes that should be
+    % preserved; over-smoothing merges them into blobs.
+    vt_plot = imgaussfilt(double(vt_dB), [0.5 0.3]);
+
+    imagesc(ax, t_axis, v_axis, vt_plot);
+    axis(ax, 'xy');
+    set_clim_shoe(ax, clo, chi);
+    ylim(ax, v_lim);
+    xlim(ax, [t_axis(1) t_axis(end)]);
+
+    colormap(ax, jet);
+    cb = colorbar(ax, 'eastoutside');
+    cb.Label.String     = 'dB';
+    cb.Label.FontSize   = 12;
+    cb.Label.FontWeight = 'bold';
+    cb.FontSize         = 11;
+    cb.LineWidth        = 0.8;
+    cb.TickDirection    = 'out';
+
+    hold(ax, 'on');
+    plot(ax, [t_axis(1) t_axis(end)], [0 0], 'REPLACE_WITH_DASH_DASH', ...
+         'Color', [0.85 0.85 0.85], 'LineWidth', 0.9);
+    hold(ax, 'off');
+
+    xlabel(ax, 'Time (s)',                         'FontSize', 13, 'FontWeight', 'bold');
+    ylabel(ax, 'Relative radial velocity (m/s)',   'FontSize', 13, 'FontWeight', 'bold');
+    ax.FontSize   = 12;
+    ax.TickLength = [0.012 0.012];
+    ax.TickDir    = 'out';
+    ax.LineWidth  = 1.0;
+    ax.Box        = 'on';
+    ax.Layer      = 'top';
+    ax.XGrid      = 'off';
+    ax.YGrid      = 'off';
+end
+
+
+% =========================================================================
+%  TOE ENVELOPE PLOT  (shoe-mounted)
+% =========================================================================
+function plot_toe_envelope_shoe(ax, toe, frame_dt, walk_segments, ...
+                                 peaks_all, peaks_used, min_step_mps, title_str)
+% PLOT_TOE_ENVELOPE_SHOE  Publication-quality toe envelope for shoe-mounted radar.
+
+    t_ax  = (0 : length(toe)-1) * frame_dt;
+    y_max = max(toe) * 1.20;
+
+    hold(ax, 'on');
+
+    % REPLACE_WITH_DASH_DASH- Walking segment shading
+    for k = 1:length(walk_segments)
+        t0_seg = (walk_segments{k}(1) - 1) * frame_dt;
+        t1_seg = (walk_segments{k}(2) - 1) * frame_dt;
+        patch(ax, [t0_seg t1_seg t1_seg t0_seg], [0 0 y_max y_max], ...
+              [0.78 0.93 0.78], 'EdgeColor', 'none', 'FaceAlpha', 0.55);
+    end
+
+    % REPLACE_WITH_DASH_DASH- Threshold
+    yline(ax, min_step_mps, ...
+          'Color', [0.85 0.10 0.10], ...
+          'LineStyle', 'REPLACE_WITH_DASH_DASH', 'LineWidth', 1.2);
+    text(ax, t_ax(end)*0.99, min_step_mps * 1.08, ...
+         sprintf('Min step toe = %.2f m/s', min_step_mps), ...
+         'HorizontalAlignment', 'right', 'FontSize', 9.5, ...
+         'Color', [0.85 0.10 0.10]);
+
+    % REPLACE_WITH_DASH_DASH- Toe envelope
+    plot(ax, t_ax, toe, 'k-', 'LineWidth', 1.8);
+
+    % REPLACE_WITH_DASH_DASH- All peaks (grey)
+    if ~isempty(peaks_all)
+        t_all = (peaks_all - 1) * frame_dt;
+        plot(ax, t_all, toe(peaks_all), 'o', ...
+             'MarkerSize', 5, ...
+             'MarkerFaceColor', [0.55 0.55 0.55], ...
+             'MarkerEdgeColor', 'none');
+    end
+
+    % REPLACE_WITH_DASH_DASH- Used steps (red)
+    if ~isempty(peaks_used)
+        t_used = (peaks_used - 1) * frame_dt;
+        plot(ax, t_used, toe(peaks_used), 'o', ...
+             'MarkerSize', 8, ...
+             'MarkerFaceColor', [0.85 0.10 0.10], ...
+             'MarkerEdgeColor', 'white', 'LineWidth', 0.8);
+    end
+
+    hold(ax, 'off');
+
+    % REPLACE_WITH_DASH_DASH- Legend
+    leg_h = []; leg_entries = {};
+    if ~isempty(peaks_all)
+        hold(ax,'on');
+        leg_h(end+1)    = plot(ax, NaN, NaN, 'o', 'MarkerSize', 5, ...
+                               'MarkerFaceColor', [0.55 0.55 0.55], 'MarkerEdgeColor', 'none');
+        leg_entries{end+1} = sprintf('All peaks (n=%d)', length(peaks_all));
+        hold(ax,'off');
+    end
+    hold(ax,'on');
+    leg_h(end+1)    = plot(ax, NaN, NaN, 'o', 'MarkerSize', 8, ...
+                           'MarkerFaceColor', [0.85 0.10 0.10], ...
+                           'MarkerEdgeColor', 'white', 'LineWidth', 0.8);
+    leg_entries{end+1} = sprintf('Steps used (n=%d)', length(peaks_used));
+    hold(ax,'off');
+
+    if ~isempty(leg_h)
+        legend(ax, leg_h, leg_entries, ...
+               'Location', 'northeast', 'FontSize', 10, ...
+               'Box', 'on', 'EdgeColor', [0.4 0.4 0.4]);
+    end
+
+    title(ax, title_str,  'FontSize', 14, 'FontWeight', 'bold');
+    xlabel(ax, 'Time (s)',                         'FontSize', 13, 'FontWeight', 'bold');
+    ylabel(ax, 'Estimated radial velocity (m/s)',  'FontSize', 13, 'FontWeight', 'bold');
+    xlim(ax, [0 t_ax(end)]);
+    ylim(ax, [0 y_max]);
+    ax.FontSize      = 12;
+    ax.TickLength    = [0.010 0.010];
+    ax.TickDir       = 'out';
+    ax.LineWidth     = 1.0;
+    ax.Box           = 'on';
+    ax.XGrid         = 'on';
+    ax.YGrid         = 'on';
+    ax.GridAlpha     = 0.18;
+    ax.GridLineStyle = ':';
+    ax.Layer         = 'top';
+end
+
+
+% =========================================================================
+%  ZOOMED STEP WINDOW PLOT  (shoe-mounted)
+% =========================================================================
+function plot_zoom_window_shoe(ax, toe, frame_dt, peaks_used, min_step_mps, zoom_range)
+% PLOT_ZOOM_WINDOW_SHOE  Zoomed view with step interval annotations.
+
+    t0_fr = max(1,           round(zoom_range(1) / frame_dt) + 1);
+    t1_fr = min(length(toe), round(zoom_range(2) / frame_dt) + 1);
+
+    t_zoom   = ((t0_fr-1) : (t1_fr-1)) * frame_dt;
+    toe_zoom = toe(t0_fr : t1_fr);
+    y_max    = max(toe_zoom) * 1.30;
+
+    hold(ax, 'on');
+    plot(ax, t_zoom, toe_zoom, 'k-', 'LineWidth', 2.2);
+    yline(ax, min_step_mps, 'rREPLACE_WITH_DASH_DASH', 'LineWidth', 1.0);
+
+    mask_z = (peaks_used >= t0_fr) & (peaks_used <= t1_fr);
+    pk_z   = peaks_used(mask_z);
+
+    if ~isempty(pk_z)
+        t_pk = (pk_z - 1) * frame_dt;
+        plot(ax, t_pk, toe(pk_z), 'o', ...
+             'MarkerSize', 9, ...
+             'MarkerFaceColor', [0.85 0.10 0.10], ...
+             'MarkerEdgeColor', 'white', 'LineWidth', 1.0);
+
+        for ii = 1 : length(pk_z) - 1
+            dt_step = (pk_z(ii+1) - pk_z(ii)) * frame_dt;
+            x_mid   = mean([(pk_z(ii)-1) (pk_z(ii+1)-1)]) * frame_dt;
+            y_ann   = max(toe(pk_z(ii)), toe(pk_z(ii+1))) + y_max * 0.07;
+            text(ax, x_mid, y_ann, sprintf('%.2f s', dt_step), ...
+                 'HorizontalAlignment', 'center', 'FontSize', 9.5, ...
+                 'Color', [0.15 0.20 0.60], 'FontWeight', 'bold');
+        end
+    end
+    hold(ax, 'off');
+
+    xlim(ax, zoom_range);
+    ylim(ax, [0 y_max]);
+    xlabel(ax, 'Time (s)',                         'FontSize', 13, 'FontWeight', 'bold');
+    ylabel(ax, 'Estimated radial velocity (m/s)',  'FontSize', 13, 'FontWeight', 'bold');
+    title(ax, sprintf('Zoomed Steps  [%.1f – %.1f s]', zoom_range(1), zoom_range(2)), ...
+          'FontSize', 13, 'FontWeight', 'bold');
+    ax.FontSize      = 12;
+    ax.TickLength    = [0.012 0.012];
+    ax.TickDir       = 'out';
+    ax.LineWidth     = 1.0;
+    ax.Box           = 'on';
+    ax.XGrid         = 'on';
+    ax.YGrid         = 'on';
+    ax.GridAlpha     = 0.18;
+    ax.GridLineStyle = ':';
+    ax.Layer         = 'top';
+end
+
+
+% =========================================================================
+%  SUMMARY PANEL  (shoe-mounted)
+% =========================================================================
+function plot_summary_panel_shoe(ax, report)
+% PLOT_SUMMARY_PANEL_SHOE  Clean typeset summary of shoe-mounted gait metrics.
+
+    axis(ax, 'off');
+    ax.Color = 'white';
+
+    fields = { ...
+        'Step mode',              report.step_mode; ...
+        'Total peaks (ALL)',      num2str(report.total_steps_all); ...
+        'Peaks in segments',      num2str(report.total_steps_walking); ...
+        'Steps used for stats',   num2str(report.total_steps_used_for_stats); ...
+        'Cadence',                [report.cadence_spm ' spm']; ...
+        'Mean step time',         [report.mean_step_time_s ' s']; ...
+        'Step time CV',           [report.step_time_cv_pct ' %']; ...
+        'Mean stride time',       [report.mean_stride_time_s ' s']; ...
+        'Stride time CV',         [report.stride_time_cv_pct ' %']; ...
+        'Swing velocity (v_sep)', [report.peak_vsep_mean_mps ' m/s']; ...
+        'Symmetry index',         report.symmetry_index; ...
+        'FOG gaps',               num2str(report.fog_episode_count); ...
+        '# Walk segments',        num2str(report.num_walking_segments); ...
+        'Walking duration',       [report.walking_duration_s ' s']; ...
+    };
+
+    n     = size(fields, 1);
+    x_lbl = 0.05;
+    x_val = 0.62;
+    y_top = 0.93;
+    dy    = 0.057;
+
+    text(ax, 0.50, 0.985, 'Gait Analysis Summary — Shoe-Mounted Radar', ...
+         'Units', 'normalized', 'HorizontalAlignment', 'center', ...
+         'FontSize', 13, 'FontWeight', 'bold', 'FontName', 'Helvetica');
+
+    annotation(ax.Parent, 'line', [0.03 0.97], [0.948 0.948], ...
+               'Color', [0.3 0.3 0.3], 'LineWidth', 1.0);
+
+    for ii = 1:n
+        y_pos = y_top - (ii-1) * dy;
+        if mod(ii, 2) == 0
+            annotation(ax.Parent, 'rectangle', [0.03 y_pos-dy*0.45 0.94 dy*0.92], ...
+                       'FaceColor', [0.95 0.95 0.97], 'EdgeColor', 'none', 'FaceAlpha', 0.8);
+        end
+        text(ax, x_lbl, y_pos, fields{ii,1}, ...
+             'Units', 'normalized', 'FontSize', 11, ...
+             'FontName', 'Helvetica', 'Color', [0.15 0.15 0.15]);
+        text(ax, x_val, y_pos, fields{ii,2}, ...
+             'Units', 'normalized', 'FontSize', 11, ...
+             'FontName', 'Helvetica', 'FontWeight', 'bold', 'Color', [0.05 0.20 0.50]);
+    end
+end
+
+
+% =========================================================================
+%  CLIM HELPER
+% =========================================================================
+function set_clim_shoe(ax, clo, chi)
+    try
+        clim(ax, [clo chi]);
+    catch
+        axes(ax); %#ok<MAXES>
+        caxis([clo chi]);
+    end
+end
+
+
+% =========================================================================
+%  AUTO-ZOOM HELPER
+% =========================================================================
+function zoom_range = auto_select_zoom_window_shoe(steps_used, toe, frame_dt, ...
+        walk_segments, window_s, min_steps, max_steps, regularity_thr)
+
+    zoom_range = [];
+    if isempty(steps_used) || length(steps_used) < min_steps
+        return;
+    end
+
+    win_frames   = round(window_s / frame_dt);
+    n_frames     = length(toe);
+    step_times_s = steps_used * frame_dt;
+
+    if ~isempty(walk_segments)
+        valid_starts = [];
+        for k = 1:length(walk_segments)
+            s0 = walk_segments{k}(1);
+            s1 = walk_segments{k}(2);
+            seg_starts = s0 : round(0.1/frame_dt) : max(s0, s1 - win_frames);
+            valid_starts = [valid_starts, seg_starts]; %#ok<AGROW>
+        end
+    else
+        valid_starts = 1 : round(0.1/frame_dt) : max(1, n_frames - win_frames);
+    end
+
+    if isempty(valid_starts), return; end
+
+    best_score = -Inf;
+    best_range = [];
+
+    for fi = valid_starts
+        fe = fi + win_frames - 1;
+        if fe > n_frames, continue; end
+
+        t0 = (fi - 1) * frame_dt;
+        t1 = (fe - 1) * frame_dt;
+
+        mask  = (step_times_s >= t0) & (step_times_s <= t1);
+        n_win = sum(mask);
+
+        if n_win < min_steps || n_win > max_steps, continue; end
+
+        t_win = step_times_s(mask);
+        if length(t_win) >= 2
+            ivs = diff(t_win);
+            cv  = std(ivs) / (mean(ivs) + eps);
+        else
+            cv = Inf;
+        end
+
+        if cv > regularity_thr, continue; end
+
+        toe_mean = mean(toe(fi:fe));
+        score    = n_win * toe_mean / (cv + 0.05);
+
+        if score > best_score
+            best_score = score;
+            best_range = [t0, t1];
+        end
+    end
+
+    zoom_range = best_range;
+end
+##### SOURCE END #####
+--></body></html>
